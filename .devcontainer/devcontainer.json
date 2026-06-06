@@ -1,0 +1,30 @@
+{
+    "name": "ai-training (Java 21 + Spring Boot)",
+    "image": "mcr.microsoft.com/devcontainers/java:21-jdk-bookworm",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "vscjava.vscode-java-pack",
+                "vmware.vscode-boot-dev-pack",
+                "GabrielBB.vscode-lombok",
+                "github.copilot-chat",
+                "ms-ceintl.vscode-language-pack-ja"
+            ],
+            "settings": {
+                "java.compile.nullAnalysis.mode": "disabled",
+                "java.project.sourcePaths": [
+                    "training-bookshelf/src/main/java",
+                    "training-bookshelf/src/test/java"
+                ],
+                "java.dependency.syncWithFolderExplorer": false
+            }
+        }
+    },
+    "forwardPorts": [8080],
+    "portsAttributes": {
+        "8080": {
+            "label": "Spring Boot App",
+            "onAutoForward": "notify"
+        }
+    }
+}
