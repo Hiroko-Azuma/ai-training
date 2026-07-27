@@ -8,7 +8,8 @@
                 "vmware.vscode-boot-dev-pack",
                 "GabrielBB.vscode-lombok",
                 "github.copilot-chat",
-                "ms-ceintl.vscode-language-pack-ja"
+                "ms-ceintl.vscode-language-pack-ja",
+                "ms-vscode.live-server"
             ],
             "settings": {
                 "java.compile.nullAnalysis.mode": "disabled",
