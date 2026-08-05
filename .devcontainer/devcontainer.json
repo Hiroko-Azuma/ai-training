@@ -18,7 +18,7 @@
                     "training-bookshelf/src/test/java"
                 ],
                 "java.dependency.syncWithFolderExplorer": false,
-                "chat.permissions.default": "autopilot",
+                "chat.permissions.default": "autoApprove",
                 "chat.tools.terminal.autoApprove": { "/.*/": true },
                 "chat.tools.terminal.ignoreDefaultAutoApproveRules": true
             }
