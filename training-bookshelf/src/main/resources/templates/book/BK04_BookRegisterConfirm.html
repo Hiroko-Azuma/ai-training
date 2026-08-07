@@ -32,6 +32,8 @@
         <dd th:text="${#numbers.formatInteger(bookRegisterForm.price, 1, 'COMMA')} + '円'"></dd>
         <dt>概要</dt>
         <dd th:text="${bookRegisterForm.description}"></dd>
+        <dt>お勧めフラグ</dt>
+        <dd th:text="${bookRegisterForm.isRecommended} ? 'する' : 'しない'"></dd>
       </dl>
 
       <div class="btn-group">

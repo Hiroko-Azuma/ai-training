@@ -57,6 +57,7 @@ class BookEditControllerTest {
     book.setCategoryId(1);
     book.setPrice(1000);
     book.setDescription("概要");
+    book.setIsRecommended(true);
     book.setUpdatedAt(LocalDateTime.now());
     return book;
   }
@@ -106,6 +107,25 @@ class BookEditControllerTest {
     BookEditForm form = (BookEditForm) result.getModelAndView().getModel().get("bookEditForm");
     assertThat(form.getBookId()).isEqualTo(1);
     assertThat(form.getTitle()).isEqualTo("書籍1");
+    assertThat(form.getIsRecommended()).isTrue();
+  }
+
+  @Test
+  void BK06_002b_DBから初期表示_お勧めフラグOFF() throws Exception {
+    // Given: お勧めフラグOFFの書籍
+    Book book = book(1);
+    book.setIsRecommended(false);
+    when(bookService.findById(1)).thenReturn(book);
+    when(categoryService.findAll()).thenReturn(Collections.emptyList());
+
+    // When
+    MvcResult result = mockMvc.perform(get("/book/edit/1"))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    // Then
+    BookEditForm form = (BookEditForm) result.getModelAndView().getModel().get("bookEditForm");
+    assertThat(form.getIsRecommended()).isFalse();
   }
 
   @Test
@@ -289,10 +309,13 @@ class BookEditControllerTest {
   @Test
   void BK07_009_更新成功() throws Exception {
     // Given
+    BookEditForm form = editForm(1);
+    form.setIsRecommended(true);
     MockHttpSession session = new MockHttpSession();
-    session.setAttribute(BookConstants.SESSION_EDIT_FORM, editForm(1));
+    session.setAttribute(BookConstants.SESSION_EDIT_FORM, form);
     when(bookService.isDuplicateIsbn("1234567890", 1)).thenReturn(false);
-    when(bookService.update(any())).thenReturn(1);
+    org.mockito.ArgumentCaptor<Book> captor = org.mockito.ArgumentCaptor.forClass(Book.class);
+    when(bookService.update(captor.capture())).thenReturn(1);
 
     // When
     MvcResult result = mockMvc.perform(post("/book/edit/1/update").session(session))
@@ -302,6 +325,7 @@ class BookEditControllerTest {
 
     // Then
     assertThat(result.getRequest().getSession().getAttribute(BookConstants.SESSION_EDIT_FORM)).isNull();
+    assertThat(captor.getValue().getIsRecommended()).isTrue();
   }
 
   @Test

@@ -340,6 +340,17 @@ body {
   color: #f39c12;
 }
 
+.badge-recommended {
+  background-color: #e74c3c;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
 .alert-danger {
   background-color: #fadbd8;
   color: #922b21;

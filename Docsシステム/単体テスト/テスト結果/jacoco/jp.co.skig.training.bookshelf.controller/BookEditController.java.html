@@ -181,23 +181,25 @@ public class BookEditController {
 <span class="fc" id="L181">    form.setCategoryId(book.getCategoryId().toString());</span>
 <span class="fc" id="L182">    form.setPrice(book.getPrice().toString());</span>
 <span class="fc" id="L183">    form.setDescription(book.getDescription());</span>
-<span class="fc" id="L184">    form.setUpdatedAt(book.getUpdatedAt().toString());</span>
-<span class="fc" id="L185">    return form;</span>
+<span class="fc" id="L184">    form.setIsRecommended(book.getIsRecommended());</span>
+<span class="fc" id="L185">    form.setUpdatedAt(book.getUpdatedAt().toString());</span>
+<span class="fc" id="L186">    return form;</span>
   }
 
   private Book toBook(BookEditForm form) {
-<span class="fc" id="L189">    Book book = new Book();</span>
-<span class="fc" id="L190">    book.setBookId(form.getBookId());</span>
-<span class="fc" id="L191">    book.setTitle(form.getTitle());</span>
-<span class="fc" id="L192">    book.setAuthor(form.getAuthor());</span>
-<span class="fc" id="L193">    book.setPublisher(form.getPublisher());</span>
-<span class="fc" id="L194">    book.setPublishedDate(LocalDate.parse(form.getPublishedDate()));</span>
-<span class="fc" id="L195">    book.setIsbn(form.getIsbn());</span>
-<span class="fc" id="L196">    book.setCategoryId(Integer.valueOf(form.getCategoryId()));</span>
-<span class="fc" id="L197">    book.setPrice(Integer.valueOf(form.getPrice()));</span>
-<span class="fc" id="L198">    book.setDescription(form.getDescription());</span>
-<span class="fc" id="L199">    book.setUpdatedAt(LocalDateTime.parse(form.getUpdatedAt()));</span>
-<span class="fc" id="L200">    return book;</span>
+<span class="fc" id="L190">    Book book = new Book();</span>
+<span class="fc" id="L191">    book.setBookId(form.getBookId());</span>
+<span class="fc" id="L192">    book.setTitle(form.getTitle());</span>
+<span class="fc" id="L193">    book.setAuthor(form.getAuthor());</span>
+<span class="fc" id="L194">    book.setPublisher(form.getPublisher());</span>
+<span class="fc" id="L195">    book.setPublishedDate(LocalDate.parse(form.getPublishedDate()));</span>
+<span class="fc" id="L196">    book.setIsbn(form.getIsbn());</span>
+<span class="fc" id="L197">    book.setCategoryId(Integer.valueOf(form.getCategoryId()));</span>
+<span class="fc" id="L198">    book.setPrice(Integer.valueOf(form.getPrice()));</span>
+<span class="fc" id="L199">    book.setDescription(form.getDescription());</span>
+<span class="fc" id="L200">    book.setIsRecommended(Boolean.TRUE.equals(form.getIsRecommended()));</span>
+<span class="fc" id="L201">    book.setUpdatedAt(LocalDateTime.parse(form.getUpdatedAt()));</span>
+<span class="fc" id="L202">    return book;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

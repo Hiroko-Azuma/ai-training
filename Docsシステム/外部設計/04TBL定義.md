@@ -21,8 +21,9 @@
 | 7 | category_id | カテゴリID | INT | - | - | NOT NULL | - | - | ○ | - | ○ | categories.category_id参照 |
 | 8 | price | 価格 | INT | - | - | NOT NULL | - | - | - | - | - | 単位:円 |
 | 9 | description | 概要 | TEXT | - | - | NULL | NULL | - | - | - | - | 最大65,535文字 |
-| 10 | created_at | 作成日時 | DATETIME | - | - | NOT NULL | CURRENT_TIMESTAMP | - | - | - | - | 登録時自動設定 |
-| 11 | updated_at | 更新日時 | DATETIME | - | - | NOT NULL | CURRENT_TIMESTAMP ON UPDATE | - | - | - | - | 更新時自動更新 |
+| 10 | is_recommended | おすすめフラグ | BOOLEAN | - | - | NOT NULL | FALSE | - | - | - | - | ONの場合、一覧画面のタイトル横に「おすすめ」表示 |
+| 11 | created_at | 作成日時 | DATETIME | - | - | NOT NULL | CURRENT_TIMESTAMP | - | - | - | - | 登録時自動設定 |
+| 12 | updated_at | 更新日時 | DATETIME | - | - | NOT NULL | CURRENT_TIMESTAMP ON UPDATE | - | - | - | - | 更新時自動更新 |
 
 ### インデックス定義
 
@@ -38,7 +39,7 @@
 ### 制約
 
 #### NOT NULL制約
-- book_id, title, author, publisher, published_date, isbn, category_id, price, created_at, updated_at
+- book_id, title, author, publisher, published_date, isbn, category_id, price, is_recommended, created_at, updated_at
 
 #### UNIQUE制約
 - isbn: 同じISBNの書籍は登録不可
@@ -75,6 +76,7 @@ CREATE TABLE books (
     category_id INT NOT NULL COMMENT 'カテゴリID',
     price INT NOT NULL COMMENT '価格',
     description TEXT NULL COMMENT '概要',
+    is_recommended BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'おすすめフラグ',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '作成日時',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日時',
     UNIQUE KEY idx_isbn (isbn),
@@ -291,6 +293,7 @@ CREATE TABLE books (
     category_id INT NOT NULL COMMENT 'カテゴリID',
     price INT NOT NULL COMMENT '価格',
     description TEXT NULL COMMENT '概要',
+    is_recommended BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'おすすめフラグ',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '作成日時',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日時',
     UNIQUE KEY idx_isbn (isbn),
@@ -443,3 +446,4 @@ ORDER BY created_at DESC;
 | 1.0 | 2024-12-15 | 初版作成（books・reviewsテーブル定義） | - |
 | 1.1 | 2026-03-27 | レビュー投稿画面（BK11〜BK13）追加に伴う記載整備 | - |
 | 1.2 | 2026-03-27 | カテゴリをマスタテーブル（categories）化。booksテーブルのcategoryカラムをcategory_id（FK）に変更 | - |
+| 1.3 | 2026-08-07 | 「おすすめフラグ」追加に伴い、booksテーブルにis_recommended列（BOOLEAN、NOT NULL、DEFAULT FALSE）を追加 | - |

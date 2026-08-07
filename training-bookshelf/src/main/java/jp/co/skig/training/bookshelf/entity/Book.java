@@ -18,6 +18,7 @@ public class Book {
   private Integer categoryId;
   private Integer price;
   private String description;
+  private Boolean isRecommended;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 

@@ -102,6 +102,7 @@
             <td th:text="${book.bookId}"></td>
             <td>
               <a class="title-link" th:href="@{/book/detail/{id}(id=${book.bookId})}" th:text="${book.title}"></a>
+              <span class="badge-recommended" th:if="${book.isRecommended}">おすすめ</span>
             </td>
             <td th:text="${book.author}"></td>
             <td th:text="${book.categoryName}"></td>

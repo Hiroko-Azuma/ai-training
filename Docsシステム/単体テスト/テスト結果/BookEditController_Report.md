@@ -5,15 +5,15 @@
 |------|------|
 | クラス名 | `jp.co.skig.training.bookshelf.controller.BookEditController` |
 | テストクラス | `BookEditControllerTest` |
-| テスト件数 | 18件 |
+| テスト件数 | 19件 |
 | テスト結果 | ALL GREEN |
 
 ## カバレッジ
 | 指標 | カバー | 未カバー | カバレッジ率 |
 |------|--------|----------|-------------|
-| 命令(Instruction) | 375 | 0 | 100% |
+| 命令(Instruction) | 386 | 0 | 100% |
 | 分岐(Branch) | 22 | 0 | 100% |
-| 行(Line) | 87 | 0 | 100% |
+| 行(Line) | 89 | 0 | 100% |
 | メソッド(Method) | 10 | 0 | 100% |
 
 ## UT時に修正した内容
@@ -28,3 +28,4 @@
 
 ### 備考
 - BK06〜BK08の一連フロー（セッション復元／DB初期表示、bookId不一致時のリダイレクト、ISBN重複、楽観ロック失敗、DB例外）を網羅。
+- 【機能追加】お勧めフラグ追加に伴い、DB取得値の `BookEditForm.isRecommended` への復元（BK06-002/002b）、および更新時の `Book.isRecommended` へのマッピング（BK07-009）を検証するテストケースを追加。

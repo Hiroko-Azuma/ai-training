@@ -181,6 +181,7 @@ public class BookEditController {
     form.setCategoryId(book.getCategoryId().toString());
     form.setPrice(book.getPrice().toString());
     form.setDescription(book.getDescription());
+    form.setIsRecommended(book.getIsRecommended());
     form.setUpdatedAt(book.getUpdatedAt().toString());
     return form;
   }
@@ -196,6 +197,7 @@ public class BookEditController {
     book.setCategoryId(Integer.valueOf(form.getCategoryId()));
     book.setPrice(Integer.valueOf(form.getPrice()));
     book.setDescription(form.getDescription());
+    book.setIsRecommended(Boolean.TRUE.equals(form.getIsRecommended()));
     book.setUpdatedAt(LocalDateTime.parse(form.getUpdatedAt()));
     return book;
   }

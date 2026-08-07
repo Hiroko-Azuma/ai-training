@@ -72,6 +72,12 @@
                     th:classappend="${errors != null and errors.containsKey('description')} ? 'has-error'"></textarea>
           <div class="error-message" th:if="${errors != null and errors.containsKey('description')}" th:text="${errors.get('description')}"></div>
         </div>
+        <div class="form-group">
+          <label for="isRecommended">
+            <input type="checkbox" id="isRecommended" th:field="*{isRecommended}">
+            お勧めフラグ（おすすめ書籍にする）
+          </label>
+        </div>
 
         <div class="btn-group">
           <button type="submit" class="btn btn-primary">確認画面へ</button>

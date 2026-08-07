@@ -157,6 +157,7 @@ public class BookRegisterController {
     book.setCategoryId(Integer.valueOf(form.getCategoryId()));
     book.setPrice(Integer.valueOf(form.getPrice()));
     book.setDescription(form.getDescription());
+    book.setIsRecommended(Boolean.TRUE.equals(form.getIsRecommended()));
     return book;
   }
 }

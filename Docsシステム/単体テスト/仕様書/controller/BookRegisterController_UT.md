@@ -41,7 +41,8 @@
 |----|------------|---------|------|---------|---------|
 | BK04-003 | セッションフォームなし | - | - | 入力画面へリダイレクト | redirect=`/book/create` |
 | BK04-004 | ISBN重複 | isDuplicateIsbn=true | - | 確認画面にエラー表示 | `errorMessage`=validation.duplicate.isbn |
-| BK04-005 | 登録成功 | isDuplicateIsbn=false | - | 完了画面へリダイレクト | redirect先に bookId 含む、セッションのフォーム削除 |
+| BK04-005 | 登録成功 | isDuplicateIsbn=false | - | 完了画面へリダイレクト | redirect先に bookId 含む、セッションのフォーム削除、`Book.isRecommended`がfalse（未チェック） |
+| BK04-005b | 登録成功（お勧めフラグON） | isDuplicateIsbn=false, form.isRecommended=true | - | 完了画面へリダイレクト | `Book.isRecommended`がtrueで登録される |
 | BK04-006 | DBエラー | register が例外送出 | - | 確認画面にエラー表示 | `errorMessage`=db.error.insert |
 
 ## cancelRegister() - 登録キャンセル

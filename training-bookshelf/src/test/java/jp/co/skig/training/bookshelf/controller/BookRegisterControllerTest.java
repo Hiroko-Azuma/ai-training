@@ -212,6 +212,31 @@ class BookRegisterControllerTest {
     // Then
     assertThat(result.getResponse().getRedirectedUrl()).isEqualTo("/book/create/complete?bookId=10");
     assertThat(result.getRequest().getSession().getAttribute(BookConstants.SESSION_REGISTER_FORM)).isNull();
+    assertThat(captor.getValue().getIsRecommended()).isFalse();
+  }
+
+  @Test
+  void BK04_005b_登録成功_お勧めフラグON() throws Exception {
+    // Given: お勧めフラグをONで入力
+    BookRegisterForm form = validForm();
+    form.setIsRecommended(true);
+    MockHttpSession session = new MockHttpSession();
+    session.setAttribute(BookConstants.SESSION_REGISTER_FORM, form);
+    when(bookService.isDuplicateIsbn("1234567890")).thenReturn(false);
+    ArgumentCaptor<Book> captor = ArgumentCaptor.forClass(Book.class);
+    org.mockito.Mockito.doAnswer(invocation -> {
+      Book book = invocation.getArgument(0);
+      book.setBookId(11);
+      return null;
+    }).when(bookService).register(captor.capture());
+
+    // When & Then
+    mockMvc.perform(post("/book/create/register").session(session))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/book/create/complete?bookId=11"));
+
+    // Then: お勧めフラグがtrueで登録される
+    assertThat(captor.getValue().getIsRecommended()).isTrue();
   }
 
   @Test

@@ -15,4 +15,5 @@ public class BookRegisterForm {
   private String categoryId;
   private String price;
   private String description;
+  private Boolean isRecommended;
 }

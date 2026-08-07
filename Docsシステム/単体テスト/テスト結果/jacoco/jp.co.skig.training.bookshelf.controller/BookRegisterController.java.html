@@ -157,7 +157,8 @@ public class BookRegisterController {
 <span class="fc" id="L157">    book.setCategoryId(Integer.valueOf(form.getCategoryId()));</span>
 <span class="fc" id="L158">    book.setPrice(Integer.valueOf(form.getPrice()));</span>
 <span class="fc" id="L159">    book.setDescription(form.getDescription());</span>
-<span class="fc" id="L160">    return book;</span>
+<span class="fc" id="L160">    book.setIsRecommended(Boolean.TRUE.equals(form.getIsRecommended()));</span>
+<span class="fc" id="L161">    return book;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
