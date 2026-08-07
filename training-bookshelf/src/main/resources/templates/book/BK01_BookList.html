@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>書籍一覧 - 書籍管理システム</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="~{fragments/common :: header}"></div>
+
+  <div class="container">
+    <h2 class="page-title">書籍一覧</h2>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <!-- 検索条件エリア -->
+    <div class="card">
+      <form class="search-form" th:action="@{/book/list}" method="get">
+        <div class="form-group">
+          <label for="searchTitle">タイトル</label>
+          <input type="text" id="searchTitle" name="searchTitle" maxlength="100" th:value="${searchTitle}">
+        </div>
+        <div class="form-group">
+          <label for="searchAuthor">著者名</label>
+          <input type="text" id="searchAuthor" name="searchAuthor" maxlength="50" th:value="${searchAuthor}">
+        </div>
+        <div class="form-group">
+          <label for="searchCategoryId">カテゴリ</label>
+          <select id="searchCategoryId" name="searchCategoryId">
+            <option value="">全て</option>
+            <option th:each="category : ${categories}"
+                    th:value="${category.categoryId}"
+                    th:text="${category.categoryName}"
+                    th:selected="${searchCategoryId != null and searchCategoryId == category.categoryId}"></option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">検索</button>
+          <a class="btn btn-secondary" th:href="@{/book/list/clear}">クリア</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="btn-group">
+      <a class="btn btn-success" th:href="@{/book/create}">新規登録</a>
+    </div>
+
+    <div class="alert alert-info" th:if="${noDataMessage}" th:text="${noDataMessage}"></div>
+    <div class="alert alert-info" th:if="${searchResultMessage}" th:text="${searchResultMessage}"></div>
+
+    <div class="card" th:if="${totalCount > 0}">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>
+              <a th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn='bookId',sortOrder=${sortColumn == 'bookId' and sortOrder == 'ASC' ? 'DESC' : 'ASC'})}">
+                書籍ID
+                <span class="sort-icon" th:if="${sortColumn == 'bookId'}" th:text="${sortOrder == 'ASC' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th>
+              <a th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn='title',sortOrder=${sortColumn == 'title' and sortOrder == 'ASC' ? 'DESC' : 'ASC'})}">
+                タイトル
+                <span class="sort-icon" th:if="${sortColumn == 'title'}" th:text="${sortOrder == 'ASC' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th>
+              <a th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn='author',sortOrder=${sortColumn == 'author' and sortOrder == 'ASC' ? 'DESC' : 'ASC'})}">
+                著者
+                <span class="sort-icon" th:if="${sortColumn == 'author'}" th:text="${sortOrder == 'ASC' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th>
+              <a th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn='categoryName',sortOrder=${sortColumn == 'categoryName' and sortOrder == 'ASC' ? 'DESC' : 'ASC'})}">
+                カテゴリ
+                <span class="sort-icon" th:if="${sortColumn == 'categoryName'}" th:text="${sortOrder == 'ASC' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th>
+              <a th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn='publishedDate',sortOrder=${sortColumn == 'publishedDate' and sortOrder == 'ASC' ? 'DESC' : 'ASC'})}">
+                出版日
+                <span class="sort-icon" th:if="${sortColumn == 'publishedDate'}" th:text="${sortOrder == 'ASC' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th>
+              <a th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn='avgRating',sortOrder=${sortColumn == 'avgRating' and sortOrder == 'ASC' ? 'DESC' : 'ASC'})}">
+                平均評価
+                <span class="sort-icon" th:if="${sortColumn == 'avgRating'}" th:text="${sortOrder == 'ASC' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th>
+              <a th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn='reviewCount',sortOrder=${sortColumn == 'reviewCount' and sortOrder == 'ASC' ? 'DESC' : 'ASC'})}">
+                レビュー数
+                <span class="sort-icon" th:if="${sortColumn == 'reviewCount'}" th:text="${sortOrder == 'ASC' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="book : ${books}">
+            <td th:text="${book.bookId}"></td>
+            <td>
+              <a class="title-link" th:href="@{/book/detail/{id}(id=${book.bookId})}" th:text="${book.title}"></a>
+            </td>
+            <td th:text="${book.author}"></td>
+            <td th:text="${book.categoryName}"></td>
+            <td th:text="${book.publishedDate}"></td>
+            <td class="rating-stars" th:text="${#numbers.formatDecimal(book.avgRating, 1, 1)} + ' ★'"></td>
+            <td th:text="${book.reviewCount}"></td>
+            <td>
+              <a class="btn btn-secondary btn-sm" th:href="@{/book/edit/{id}(id=${book.bookId})}">編集</a>
+              <a class="btn btn-danger btn-sm" th:href="@{/book/delete/confirm/{id}(id=${book.bookId})}">削除</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination" th:if="${totalPages > 1}">
+        <a th:if="${currentPage > 1}"
+           th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn=${sortColumn},sortOrder=${sortOrder},page=${currentPage - 1})}">« 前へ</a>
+        <span th:each="p : ${#numbers.sequence(1, totalPages)}">
+          <a th:if="${p != currentPage}"
+             th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn=${sortColumn},sortOrder=${sortOrder},page=${p})}"
+             th:text="${p}"></a>
+          <span th:if="${p == currentPage}" class="current-page" th:text="${p}"></span>
+        </span>
+        <a th:if="${currentPage < totalPages}"
+           th:href="@{/book/list(searchTitle=${searchTitle},searchAuthor=${searchAuthor},searchCategoryId=${searchCategoryId},sortColumn=${sortColumn},sortOrder=${sortOrder},page=${currentPage + 1})}">次へ »</a>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/common :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <header class="header" th:fragment="header">
+    <h1>書籍管理システム</h1>
+    <nav><a th:href="@{/book/list}">書籍一覧</a></nav>
+  </header>
+  <footer class="footer" th:fragment="footer">
+    &copy; 2024 Training BookShelf
+  </footer>
+</body>
+</html>

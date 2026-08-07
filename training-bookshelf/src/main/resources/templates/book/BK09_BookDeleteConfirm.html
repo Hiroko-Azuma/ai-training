@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>書籍削除確認 - 書籍管理システム</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <header class="header">
+    <h1>書籍管理システム</h1>
+    <nav><a th:href="@{/book/list}">書籍一覧</a></nav>
+  </header>
+
+  <div class="container">
+    <h2 class="page-title">書籍削除確認</h2>
+
+    <div class="alert alert-warning">以下の書籍を削除しますか?</div>
+    <div class="alert alert-danger">※この操作は取り消せません。関連するレビューも全て削除されます。</div>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="card">
+      <dl class="confirm-table">
+        <dt>書籍ID</dt>
+        <dd th:text="${book.bookId}"></dd>
+        <dt>タイトル</dt>
+        <dd th:text="${book.title}"></dd>
+        <dt>著者</dt>
+        <dd th:text="${book.author}"></dd>
+      </dl>
+
+      <div class="btn-group">
+        <form th:action="@{/book/delete/{id}(id=${book.bookId})}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-danger">削除</button>
+        </form>
+        <a th:href="@{/book/detail/{id}(id=${book.bookId})}" class="btn btn-secondary">キャンセル</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">&copy; 2024 Training BookShelf</footer>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>書籍登録確認 - 書籍管理システム</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="~{fragments/common :: header}"></div>
+
+  <div class="container">
+    <h2 class="page-title">書籍登録確認</h2>
+
+    <div class="alert alert-info">以下の内容で登録します。よろしいですか?</div>
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="card">
+      <dl class="confirm-table">
+        <dt>タイトル</dt>
+        <dd th:text="${bookRegisterForm.title}"></dd>
+        <dt>著者</dt>
+        <dd th:text="${bookRegisterForm.author}"></dd>
+        <dt>出版社</dt>
+        <dd th:text="${bookRegisterForm.publisher}"></dd>
+        <dt>出版日</dt>
+        <dd th:text="${bookRegisterForm.publishedDate}"></dd>
+        <dt>ISBN</dt>
+        <dd th:text="${bookRegisterForm.isbn}"></dd>
+        <dt>カテゴリ</dt>
+        <dd th:text="${categoryName}"></dd>
+        <dt>価格</dt>
+        <dd th:text="${#numbers.formatInteger(bookRegisterForm.price, 1, 'COMMA')} + '円'"></dd>
+        <dt>概要</dt>
+        <dd th:text="${bookRegisterForm.description}"></dd>
+      </dl>
+
+      <div class="btn-group">
+        <form th:action="@{/book/create/register}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-primary">登録</button>
+        </form>
+        <a class="btn btn-secondary" th:href="@{/book/create}">戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/common :: footer}"></div>
+</body>
+</html>

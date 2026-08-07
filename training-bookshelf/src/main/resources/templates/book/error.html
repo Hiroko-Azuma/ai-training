@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>エラー - 書籍管理システム</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="~{fragments/common :: header}"></div>
+
+  <div class="container">
+    <h2 class="page-title">エラー</h2>
+    <div class="alert alert-danger" th:text="${errorMessage}"></div>
+    <a class="btn btn-primary" th:href="@{${redirectUrl}}">一覧に戻る</a>
+  </div>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    var redirectUrl = /*[[${redirectUrl}]]*/ '/book/list';
+    setTimeout(function () {
+      window.location.href = redirectUrl;
+    }, 3000);
+    /*]]>*/
+  </script>
+
+  <div th:replace="~{fragments/common :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${book.title} + ' - 書籍管理システム'"></title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="~{fragments/common :: header}"></div>
+
+  <div class="container">
+    <h2 class="page-title">書籍詳細</h2>
+
+    <div class="card">
+      <dl class="confirm-table">
+        <dt>書籍ID</dt>
+        <dd th:text="${book.bookId}"></dd>
+        <dt>タイトル</dt>
+        <dd th:text="${book.title}"></dd>
+        <dt>著者</dt>
+        <dd th:text="${book.author}"></dd>
+        <dt>出版社</dt>
+        <dd th:text="${book.publisher}"></dd>
+        <dt>出版日</dt>
+        <dd th:text="${book.publishedDate}"></dd>
+        <dt>ISBN</dt>
+        <dd th:text="${book.isbn}"></dd>
+        <dt>カテゴリ</dt>
+        <dd th:text="${book.categoryName}"></dd>
+        <dt>価格</dt>
+        <dd th:text="${#numbers.formatInteger(book.price, 1, 'COMMA')} + '円'"></dd>
+        <dt>概要</dt>
+        <dd th:text="${book.description}"></dd>
+        <dt>平均評価</dt>
+        <dd class="rating-stars" th:text="${#numbers.formatDecimal(avgRating, 1, 1)} + ' ★'"></dd>
+      </dl>
+
+      <div class="btn-group">
+        <a class="btn btn-secondary" th:href="@{/book/edit/{id}(id=${book.bookId})}">編集</a>
+        <a class="btn btn-danger" th:href="@{/book/delete/confirm/{id}(id=${book.bookId})}">削除</a>
+        <a class="btn btn-primary" th:href="@{/books/{id}/reviews/new(id=${book.bookId})}">レビューを書く</a>
+        <a class="btn btn-secondary"
+           th:href="@{/book/list(searchTitle=${backSearchTitle},searchAuthor=${backSearchAuthor},searchCategoryId=${backSearchCategoryId})}">一覧に戻る</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="page-title">レビュー一覧</h3>
+      <div class="alert alert-info" th:if="${#lists.isEmpty(reviews)}">レビューはまだ投稿されていません</div>
+      <div class="card" th:each="review : ${reviews}" style="box-shadow:none;border:1px solid #e0e0e0;">
+        <p><strong th:text="${review.reviewerName}"></strong>
+          <span class="rating-stars" th:text="${review.rating} + ' ★'"></span>
+        </p>
+        <p th:text="${review.comment}"></p>
+        <p style="color:#999;font-size:0.8rem;"
+           th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></p>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/common :: footer}"></div>
+</body>
+</html>

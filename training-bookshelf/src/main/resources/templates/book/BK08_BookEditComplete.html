@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>書籍更新完了 - 書籍管理システム</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="~{fragments/common :: header}"></div>
+
+  <div class="container">
+    <h2 class="page-title">書籍更新完了</h2>
+
+    <div class="alert alert-success">書籍情報を更新しました</div>
+
+    <div class="card">
+      <p>書籍ID: <span th:text="${bookId}"></span></p>
+      <div class="btn-group">
+        <a class="btn btn-primary" th:href="@{/book/detail/{id}(id=${bookId})}">詳細を見る</a>
+        <a class="btn btn-secondary" th:href="@{/book/list}">一覧に戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/common :: footer}"></div>
+</body>
+</html>

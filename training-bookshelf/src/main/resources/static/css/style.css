@@ -300,6 +300,48 @@ body {
 
 .alert-danger {
   background-color: #fadbd8;
+  color: #943126;
+  border: 1px solid #f1948a;
+}
+
+/* ページネーション */
+.pagination {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+  font-size: 0.9rem;
+}
+
+.pagination a {
+  color: #2980b9;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.pagination a:hover {
+  background-color: #eaf2f8;
+}
+
+.pagination .current-page {
+  font-weight: 700;
+  color: #fff;
+  background-color: #2980b9;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.sort-icon {
+  font-size: 0.7rem;
+}
+
+.rating-stars {
+  color: #f39c12;
+}
+
+.alert-danger {
+  background-color: #fadbd8;
   color: #922b21;
   border: 1px solid #f5b7b1;
 }

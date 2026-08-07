@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>レビュー投稿確認 - 書籍管理システム</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="~{fragments/common :: header}"></div>
+
+  <div class="container">
+    <h2 class="page-title">レビュー投稿確認</h2>
+
+    <div class="alert alert-info">以下の内容でレビューを投稿します。よろしいですか?</div>
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="card">
+      <dl class="confirm-table">
+        <dt>タイトル</dt>
+        <dd th:text="${book.title}"></dd>
+        <dt>著者</dt>
+        <dd th:text="${book.author}"></dd>
+        <dt>レビュアー名</dt>
+        <dd th:text="${reviewForm.reviewerName}"></dd>
+        <dt>評価</dt>
+        <dd class="rating-stars" th:text="${reviewForm.rating} + ' ★'"></dd>
+        <dt>コメント</dt>
+        <dd th:text="${reviewForm.comment}"></dd>
+      </dl>
+
+      <div class="btn-group">
+        <form th:action="@{/books/{id}/reviews/register(id=${book.bookId})}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-primary">投稿</button>
+        </form>
+        <a class="btn btn-secondary" th:href="@{/books/{id}/reviews/new(id=${book.bookId})}">戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/common :: footer}"></div>
+</body>
+</html>

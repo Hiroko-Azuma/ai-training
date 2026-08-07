@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>書籍削除完了 - 書籍管理システム</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="~{fragments/common :: header}"></div>
+
+  <div class="container">
+    <h2 class="page-title">書籍削除完了</h2>
+
+    <div class="alert alert-success">書籍の削除が完了しました</div>
+
+    <div class="card">
+      <div class="btn-group">
+        <a class="btn btn-secondary" th:href="@{/book/list}">一覧に戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/common :: footer}"></div>
+</body>
+</html>

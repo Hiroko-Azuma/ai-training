@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>レビュー投稿完了 - 書籍管理システム</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="~{fragments/common :: header}"></div>
+
+  <div class="container">
+    <h2 class="page-title">レビュー投稿完了</h2>
+
+    <div class="alert alert-success">レビューを投稿しました</div>
+
+    <div class="card">
+      <dl class="confirm-table">
+        <dt>対象書籍</dt>
+        <dd th:text="${book.title}"></dd>
+        <dt>レビュアー名</dt>
+        <dd th:text="${reviewerName}"></dd>
+        <dt>評価</dt>
+        <dd class="rating-stars" th:text="${rating} + ' ★'"></dd>
+      </dl>
+
+      <div class="btn-group">
+        <a class="btn btn-primary" th:href="@{/book/detail/{id}(id=${book.bookId})}">詳細に戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/common :: footer}"></div>
+</body>
+</html>

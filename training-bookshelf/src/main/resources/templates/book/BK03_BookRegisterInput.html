@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>書籍登録 - 書籍管理システム</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <div th:replace="~{fragments/common :: header}"></div>
+
+  <div class="container">
+    <h2 class="page-title">書籍登録</h2>
+
+    <div class="card">
+      <form th:action="@{/book/create/confirm}" th:object="${bookRegisterForm}" method="post">
+        <div class="form-group">
+          <label class="required" for="title">タイトル</label>
+          <input type="text" id="title" th:field="*{title}" maxlength="100"
+                 placeholder="書籍のタイトルを入力してください"
+                 th:classappend="${errors != null and errors.containsKey('title')} ? 'has-error'">
+          <div class="error-message" th:if="${errors != null and errors.containsKey('title')}" th:text="${errors.get('title')}"></div>
+        </div>
+        <div class="form-group">
+          <label class="required" for="author">著者</label>
+          <input type="text" id="author" th:field="*{author}" maxlength="50"
+                 placeholder="著者名を入力してください"
+                 th:classappend="${errors != null and errors.containsKey('author')} ? 'has-error'">
+          <div class="error-message" th:if="${errors != null and errors.containsKey('author')}" th:text="${errors.get('author')}"></div>
+        </div>
+        <div class="form-group">
+          <label class="required" for="publisher">出版社</label>
+          <input type="text" id="publisher" th:field="*{publisher}" maxlength="50"
+                 placeholder="出版社名を入力してください"
+                 th:classappend="${errors != null and errors.containsKey('publisher')} ? 'has-error'">
+          <div class="error-message" th:if="${errors != null and errors.containsKey('publisher')}" th:text="${errors.get('publisher')}"></div>
+        </div>
+        <div class="form-group">
+          <label class="required" for="publishedDate">出版日</label>
+          <input type="date" id="publishedDate" th:field="*{publishedDate}"
+                 th:classappend="${errors != null and errors.containsKey('publishedDate')} ? 'has-error'">
+          <div class="error-message" th:if="${errors != null and errors.containsKey('publishedDate')}" th:text="${errors.get('publishedDate')}"></div>
+        </div>
+        <div class="form-group">
+          <label class="required" for="isbn">ISBN</label>
+          <input type="text" id="isbn" th:field="*{isbn}" maxlength="13"
+                 placeholder="10桁または13桁の数字を入力してください"
+                 th:classappend="${errors != null and errors.containsKey('isbn')} ? 'has-error'">
+          <div class="error-message" th:if="${errors != null and errors.containsKey('isbn')}" th:text="${errors.get('isbn')}"></div>
+        </div>
+        <div class="form-group">
+          <label class="required" for="categoryId">カテゴリ</label>
+          <select id="categoryId" th:field="*{categoryId}"
+                  th:classappend="${errors != null and errors.containsKey('categoryId')} ? 'has-error'">
+            <option value="">選択してください</option>
+            <option th:each="category : ${categories}"
+                    th:value="${category.categoryId}"
+                    th:text="${category.categoryName}"></option>
+          </select>
+          <div class="error-message" th:if="${errors != null and errors.containsKey('categoryId')}" th:text="${errors.get('categoryId')}"></div>
+        </div>
+        <div class="form-group">
+          <label class="required" for="price">価格</label>
+          <input type="number" id="price" th:field="*{price}" min="0"
+                 placeholder="価格を入力してください"
+                 th:classappend="${errors != null and errors.containsKey('price')} ? 'has-error'">
+          <div class="error-message" th:if="${errors != null and errors.containsKey('price')}" th:text="${errors.get('price')}"></div>
+        </div>
+        <div class="form-group">
+          <label for="description">概要</label>
+          <textarea id="description" th:field="*{description}" maxlength="1000"
+                    placeholder="書籍の概要を入力してください(任意)"
+                    th:classappend="${errors != null and errors.containsKey('description')} ? 'has-error'"></textarea>
+          <div class="error-message" th:if="${errors != null and errors.containsKey('description')}" th:text="${errors.get('description')}"></div>
+        </div>
+
+        <div class="btn-group">
+          <button type="submit" class="btn btn-primary">確認画面へ</button>
+          <a class="btn btn-secondary" th:href="@{/book/create/cancel}">キャンセル</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/common :: footer}"></div>
+</body>
+</html>
