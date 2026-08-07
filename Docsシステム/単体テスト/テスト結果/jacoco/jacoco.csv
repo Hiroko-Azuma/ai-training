@@ -3,9 +3,9 @@ training-bookshelf,jp.co.skig.training.bookshelf.controller,BookRegisterControll
 training-bookshelf,jp.co.skig.training.bookshelf.controller,ReviewController,0,253,0,14,0,60,0,13,0,6
 training-bookshelf,jp.co.skig.training.bookshelf.controller,BookEditController,0,386,0,22,0,89,0,21,0,10
 training-bookshelf,jp.co.skig.training.bookshelf.controller,BookDeleteController,0,82,0,4,0,21,0,6,0,4
-training-bookshelf,jp.co.skig.training.bookshelf.controller,BookListController,0,209,2,20,0,43,2,12,0,3
+training-bookshelf,jp.co.skig.training.bookshelf.controller,BookListController,0,243,1,25,0,50,1,15,0,3
 training-bookshelf,jp.co.skig.training.bookshelf.controller,BookDetailController,0,98,0,2,0,23,0,2,0,1
-training-bookshelf,jp.co.skig.training.bookshelf.service,BookService,0,67,0,6,0,11,0,11,0,8
+training-bookshelf,jp.co.skig.training.bookshelf.service,BookService,0,73,0,6,0,12,0,12,0,9
 training-bookshelf,jp.co.skig.training.bookshelf.service,CategoryService,0,4,0,0,0,1,0,1,0,1
 training-bookshelf,jp.co.skig.training.bookshelf.service,ReviewService,0,10,0,0,0,3,0,2,0,2
 training-bookshelf,jp.co.skig.training.bookshelf.util,BookFormValidator,0,339,0,44,0,60,0,31,0,9

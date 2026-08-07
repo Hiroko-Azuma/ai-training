@@ -33,6 +33,7 @@ public class BookListController {
       @RequestParam(required = false) String searchTitle,
       @RequestParam(required = false) String searchAuthor,
       @RequestParam(required = false) Integer searchCategoryId,
+      @RequestParam(required = false) String searchPublisher,
       @RequestParam(required = false) String sortColumn,
       @RequestParam(required = false) String sortOrder,
       @RequestParam(defaultValue = &quot;1&quot;) int page,
@@ -40,51 +41,57 @@ public class BookListController {
       Model model) {
 
     // 検索条件確定：リクエスト指定があればセッションを更新、なければセッション値を利用
-<span class="fc" id="L43">    String title = resolveSearchValue(searchTitle, session, BookConstants.SESSION_SEARCH_TITLE);</span>
-<span class="fc" id="L44">    String author = resolveSearchValue(searchAuthor, session, BookConstants.SESSION_SEARCH_AUTHOR);</span>
-<span class="fc bfc" id="L45" title="All 2 branches covered.">    Integer categoryId = searchCategoryId != null</span>
-<span class="fc" id="L46">        ? searchCategoryId</span>
-<span class="fc" id="L47">        : (Integer) session.getAttribute(BookConstants.SESSION_SEARCH_CATEGORY_ID);</span>
+<span class="fc" id="L44">    String title = resolveSearchValue(searchTitle, session, BookConstants.SESSION_SEARCH_TITLE);</span>
+<span class="fc" id="L45">    String author = resolveSearchValue(searchAuthor, session, BookConstants.SESSION_SEARCH_AUTHOR);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">    Integer categoryId = searchCategoryId != null</span>
+<span class="fc" id="L47">        ? searchCategoryId</span>
+<span class="fc" id="L48">        : (Integer) session.getAttribute(BookConstants.SESSION_SEARCH_CATEGORY_ID);</span>
+<span class="fc" id="L49">    String publisher = resolveSearchValue(searchPublisher, session,</span>
+        BookConstants.SESSION_SEARCH_PUBLISHER);
 
-<span class="fc" id="L49">    session.setAttribute(BookConstants.SESSION_SEARCH_TITLE, title);</span>
-<span class="fc" id="L50">    session.setAttribute(BookConstants.SESSION_SEARCH_AUTHOR, author);</span>
-<span class="fc" id="L51">    session.setAttribute(BookConstants.SESSION_SEARCH_CATEGORY_ID, categoryId);</span>
+<span class="fc" id="L52">    session.setAttribute(BookConstants.SESSION_SEARCH_TITLE, title);</span>
+<span class="fc" id="L53">    session.setAttribute(BookConstants.SESSION_SEARCH_AUTHOR, author);</span>
+<span class="fc" id="L54">    session.setAttribute(BookConstants.SESSION_SEARCH_CATEGORY_ID, categoryId);</span>
+<span class="fc" id="L55">    session.setAttribute(BookConstants.SESSION_SEARCH_PUBLISHER, publisher);</span>
 
-<span class="fc bfc" id="L53" title="All 2 branches covered.">    String column = sortColumn != null ? sortColumn : BookConstants.DEFAULT_SORT_COLUMN;</span>
-<span class="fc bfc" id="L54" title="All 2 branches covered.">    String order = sortOrder != null ? sortOrder : BookConstants.DEFAULT_SORT_ORDER;</span>
-<span class="fc" id="L55">    int currentPage = Math.max(1, page);</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">    String column = sortColumn != null ? sortColumn : BookConstants.DEFAULT_SORT_COLUMN;</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">    String order = sortOrder != null ? sortOrder : BookConstants.DEFAULT_SORT_ORDER;</span>
+<span class="fc" id="L59">    int currentPage = Math.max(1, page);</span>
 
     try {
-<span class="fc" id="L58">      int totalCount = bookService.count(title, author, categoryId);</span>
-<span class="fc" id="L59">      int totalPages = (int) Math.ceil((double) totalCount / BookConstants.PAGE_SIZE);</span>
-<span class="fc" id="L60">      List&lt;Book&gt; books = bookService.findAll(title, author, categoryId, column, order,</span>
+<span class="fc" id="L62">      int totalCount = bookService.count(title, author, categoryId, publisher);</span>
+<span class="fc" id="L63">      int totalPages = (int) Math.ceil((double) totalCount / BookConstants.PAGE_SIZE);</span>
+<span class="fc" id="L64">      List&lt;Book&gt; books = bookService.findAll(title, author, categoryId, publisher, column, order,</span>
           currentPage - 1, BookConstants.PAGE_SIZE);
-<span class="fc" id="L62">      List&lt;Category&gt; categories = categoryService.findAll();</span>
+<span class="fc" id="L66">      List&lt;Category&gt; categories = categoryService.findAll();</span>
+<span class="fc" id="L67">      List&lt;String&gt; publishers = bookService.findDistinctPublishers();</span>
 
-<span class="fc" id="L64">      model.addAttribute(&quot;books&quot;, books);</span>
-<span class="fc" id="L65">      model.addAttribute(&quot;categories&quot;, categories);</span>
-<span class="fc" id="L66">      model.addAttribute(&quot;searchTitle&quot;, title);</span>
-<span class="fc" id="L67">      model.addAttribute(&quot;searchAuthor&quot;, author);</span>
-<span class="fc" id="L68">      model.addAttribute(&quot;searchCategoryId&quot;, categoryId);</span>
-<span class="fc" id="L69">      model.addAttribute(&quot;sortColumn&quot;, column);</span>
-<span class="fc" id="L70">      model.addAttribute(&quot;sortOrder&quot;, order);</span>
-<span class="fc" id="L71">      model.addAttribute(&quot;currentPage&quot;, currentPage);</span>
-<span class="fc" id="L72">      model.addAttribute(&quot;totalPages&quot;, totalPages);</span>
-<span class="fc" id="L73">      model.addAttribute(&quot;totalCount&quot;, totalCount);</span>
+<span class="fc" id="L69">      model.addAttribute(&quot;books&quot;, books);</span>
+<span class="fc" id="L70">      model.addAttribute(&quot;categories&quot;, categories);</span>
+<span class="fc" id="L71">      model.addAttribute(&quot;publishers&quot;, publishers);</span>
+<span class="fc" id="L72">      model.addAttribute(&quot;searchTitle&quot;, title);</span>
+<span class="fc" id="L73">      model.addAttribute(&quot;searchAuthor&quot;, author);</span>
+<span class="fc" id="L74">      model.addAttribute(&quot;searchCategoryId&quot;, categoryId);</span>
+<span class="fc" id="L75">      model.addAttribute(&quot;searchPublisher&quot;, publisher);</span>
+<span class="fc" id="L76">      model.addAttribute(&quot;sortColumn&quot;, column);</span>
+<span class="fc" id="L77">      model.addAttribute(&quot;sortOrder&quot;, order);</span>
+<span class="fc" id="L78">      model.addAttribute(&quot;currentPage&quot;, currentPage);</span>
+<span class="fc" id="L79">      model.addAttribute(&quot;totalPages&quot;, totalPages);</span>
+<span class="fc" id="L80">      model.addAttribute(&quot;totalCount&quot;, totalCount);</span>
 
-<span class="fc bfc" id="L75" title="All 2 branches covered.">      if (totalCount == 0) {</span>
-<span class="fc" id="L76">        model.addAttribute(&quot;noDataMessage&quot;, MessageUtil.getMessage(&quot;bk01.message.nodata&quot;));</span>
-<span class="pc bpc" id="L77" title="2 of 10 branches missed.">      } else if ((title != null &amp;&amp; !title.isBlank()) || (author != null &amp;&amp; !author.isBlank())</span>
-          || categoryId != null) {
-<span class="fc" id="L79">        model.addAttribute(&quot;searchResultMessage&quot;,</span>
-<span class="fc" id="L80">            MessageUtil.getMessage(&quot;bk01.message.searchresult&quot;, totalCount));</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">      if (totalCount == 0) {</span>
+<span class="fc" id="L83">        model.addAttribute(&quot;noDataMessage&quot;, MessageUtil.getMessage(&quot;bk01.message.nodata&quot;));</span>
+<span class="fc bfc" id="L84" title="All 12 branches covered.">      } else if ((title != null &amp;&amp; !title.isBlank()) || (author != null &amp;&amp; !author.isBlank())</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">          || categoryId != null || (publisher != null &amp;&amp; !publisher.isBlank())) {</span>
+<span class="fc" id="L86">        model.addAttribute(&quot;searchResultMessage&quot;,</span>
+<span class="fc" id="L87">            MessageUtil.getMessage(&quot;bk01.message.searchresult&quot;, totalCount));</span>
       }
-<span class="fc" id="L82">    } catch (Exception e) {</span>
-<span class="fc" id="L83">      ExceptionLogger.log(e);</span>
-<span class="fc" id="L84">      model.addAttribute(&quot;errorMessage&quot;, MessageUtil.getMessage(&quot;db.error.select&quot;));</span>
-<span class="fc" id="L85">    }</span>
+<span class="fc" id="L89">    } catch (Exception e) {</span>
+<span class="fc" id="L90">      ExceptionLogger.log(e);</span>
+<span class="fc" id="L91">      model.addAttribute(&quot;errorMessage&quot;, MessageUtil.getMessage(&quot;db.error.select&quot;));</span>
+<span class="fc" id="L92">    }</span>
 
-<span class="fc" id="L87">    return &quot;book/BK01_BookList&quot;;</span>
+<span class="fc" id="L94">    return &quot;book/BK01_BookList&quot;;</span>
   }
 
   /**
@@ -92,18 +99,19 @@ public class BookListController {
    */
   @GetMapping(&quot;/book/list/clear&quot;)
   public String clearSearch(HttpSession session) {
-<span class="fc" id="L95">    session.removeAttribute(BookConstants.SESSION_SEARCH_TITLE);</span>
-<span class="fc" id="L96">    session.removeAttribute(BookConstants.SESSION_SEARCH_AUTHOR);</span>
-<span class="fc" id="L97">    session.removeAttribute(BookConstants.SESSION_SEARCH_CATEGORY_ID);</span>
-<span class="fc" id="L98">    return &quot;redirect:/book/list&quot;;</span>
+<span class="fc" id="L102">    session.removeAttribute(BookConstants.SESSION_SEARCH_TITLE);</span>
+<span class="fc" id="L103">    session.removeAttribute(BookConstants.SESSION_SEARCH_AUTHOR);</span>
+<span class="fc" id="L104">    session.removeAttribute(BookConstants.SESSION_SEARCH_CATEGORY_ID);</span>
+<span class="fc" id="L105">    session.removeAttribute(BookConstants.SESSION_SEARCH_PUBLISHER);</span>
+<span class="fc" id="L106">    return &quot;redirect:/book/list&quot;;</span>
   }
 
   private String resolveSearchValue(String requestValue, HttpSession session, String sessionKey) {
-<span class="fc bfc" id="L102" title="All 2 branches covered.">    if (requestValue != null) {</span>
-<span class="fc" id="L103">      return requestValue;</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">    if (requestValue != null) {</span>
+<span class="fc" id="L111">      return requestValue;</span>
     }
-<span class="fc" id="L105">    Object sessionValue = session.getAttribute(sessionKey);</span>
-<span class="fc bfc" id="L106" title="All 2 branches covered.">    return sessionValue != null ? sessionValue.toString() : null;</span>
+<span class="fc" id="L113">    Object sessionValue = session.getAttribute(sessionKey);</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">    return sessionValue != null ? sessionValue.toString() : null;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

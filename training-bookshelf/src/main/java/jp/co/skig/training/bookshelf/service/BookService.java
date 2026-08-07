@@ -21,6 +21,7 @@ public class BookService {
    * @param searchTitle タイトル検索条件
    * @param searchAuthor 著者検索条件
    * @param searchCategoryId カテゴリID検索条件
+   * @param searchPublisher 出版社検索条件（完全一致）
    * @param sortColumn ソート列
    * @param sortOrder ソート順
    * @param page ページ番号（0始まり）
@@ -28,10 +29,10 @@ public class BookService {
    * @return 書籍一覧
    */
   public List<Book> findAll(String searchTitle, String searchAuthor,
-      Integer searchCategoryId, String sortColumn, String sortOrder,
+      Integer searchCategoryId, String searchPublisher, String sortColumn, String sortOrder,
       int page, int pageSize) {
     int offset = page * pageSize;
-    return bookMapper.findAll(searchTitle, searchAuthor, searchCategoryId,
+    return bookMapper.findAll(searchTitle, searchAuthor, searchCategoryId, searchPublisher,
         sortColumn, sortOrder, pageSize, offset);
   }
 
@@ -40,11 +41,20 @@ public class BookService {
    * @param searchTitle タイトル検索条件
    * @param searchAuthor 著者検索条件
    * @param searchCategoryId カテゴリID検索条件
+   * @param searchPublisher 出版社検索条件（完全一致）
    * @return 件数
    */
   public int count(String searchTitle, String searchAuthor,
-      Integer searchCategoryId) {
-    return bookMapper.count(searchTitle, searchAuthor, searchCategoryId);
+      Integer searchCategoryId, String searchPublisher) {
+    return bookMapper.count(searchTitle, searchAuthor, searchCategoryId, searchPublisher);
+  }
+
+  /**
+   * 出版社の選択肢を重複排除して取得する
+   * @return 出版社名リスト（昇順）
+   */
+  public List<String> findDistinctPublishers() {
+    return bookMapper.findDistinctPublishers();
   }
 
   /**

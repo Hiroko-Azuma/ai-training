@@ -24,6 +24,7 @@ public interface BookMapper {
       @Param("searchTitle") String searchTitle,
       @Param("searchAuthor") String searchAuthor,
       @Param("searchCategoryId") Integer searchCategoryId,
+      @Param("searchPublisher") String searchPublisher,
       @Param("sortColumn") String sortColumn,
       @Param("sortOrder") String sortOrder,
       @Param("limit") int limit,
@@ -36,7 +37,15 @@ public interface BookMapper {
   int count(
       @Param("searchTitle") String searchTitle,
       @Param("searchAuthor") String searchAuthor,
-      @Param("searchCategoryId") Integer searchCategoryId);
+      @Param("searchCategoryId") Integer searchCategoryId,
+      @Param("searchPublisher") String searchPublisher);
+
+  /**
+   * 出版社の選択肢を重複排除して取得する（マスタテーブルを持たないためbooksテーブルから取得）
+   * @return 出版社名リスト（昇順）
+   */
+  @Select("SELECT DISTINCT publisher FROM books ORDER BY publisher")
+  List<String> findDistinctPublishers();
 
   /**
    * 書籍を1件取得する（カテゴリ名付き）

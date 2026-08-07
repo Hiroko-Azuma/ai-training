@@ -33,39 +33,52 @@ class BookServiceTest {
   @Test
   void BS_001_ページオフセット計算() {
     // Given: 3ページ目、1ページ20件
-    when(bookMapper.findAll(any(), any(), any(), any(), any(), anyInt(), anyInt()))
+    when(bookMapper.findAll(any(), any(), any(), any(), any(), any(), anyInt(), anyInt()))
         .thenReturn(List.of());
 
     // When
-    bookService.findAll(null, null, null, "bookId", "DESC", 2, 20);
+    bookService.findAll(null, null, null, null, "bookId", "DESC", 2, 20);
 
     // Then: offset = page(2) * pageSize(20) = 40
-    verify(bookMapper).findAll(null, null, null, "bookId", "DESC", 20, 40);
+    verify(bookMapper).findAll(null, null, null, null, "bookId", "DESC", 20, 40);
   }
 
   @Test
   void BS_002_検索条件をそのまま委譲() {
     // Given
-    when(bookMapper.findAll(any(), any(), any(), any(), any(), anyInt(), anyInt()))
+    when(bookMapper.findAll(any(), any(), any(), any(), any(), any(), anyInt(), anyInt()))
         .thenReturn(List.of());
 
     // When
-    bookService.findAll("タイトル", "著者", 3, "title", "ASC", 0, 20);
+    bookService.findAll("タイトル", "著者", 3, "オライリージャパン", "title", "ASC", 0, 20);
 
     // Then
-    verify(bookMapper).findAll(eq("タイトル"), eq("著者"), eq(3), eq("title"), eq("ASC"), eq(20), eq(0));
+    verify(bookMapper).findAll(eq("タイトル"), eq("著者"), eq(3), eq("オライリージャパン"), eq("title"),
+        eq("ASC"), eq(20), eq(0));
   }
 
   @Test
   void BS_003_件数取得成功() {
     // Given
-    when(bookMapper.count(isNull(), isNull(), isNull())).thenReturn(5);
+    when(bookMapper.count(isNull(), isNull(), isNull(), isNull())).thenReturn(5);
 
     // When
-    int actual = bookService.count(null, null, null);
+    int actual = bookService.count(null, null, null, null);
 
     // Then
     assertThat(actual).isEqualTo(5);
+  }
+
+  @Test
+  void BS_016_出版社選択肢を重複排除して取得() {
+    // Given
+    when(bookMapper.findDistinctPublishers()).thenReturn(List.of("岩波書店", "創元社"));
+
+    // When
+    List<String> actual = bookService.findDistinctPublishers();
+
+    // Then
+    assertThat(actual).containsExactly("岩波書店", "創元社");
   }
 
   @Test

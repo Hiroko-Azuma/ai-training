@@ -33,6 +33,7 @@ public class BookListController {
       @RequestParam(required = false) String searchTitle,
       @RequestParam(required = false) String searchAuthor,
       @RequestParam(required = false) Integer searchCategoryId,
+      @RequestParam(required = false) String searchPublisher,
       @RequestParam(required = false) String sortColumn,
       @RequestParam(required = false) String sortOrder,
       @RequestParam(defaultValue = "1") int page,
@@ -45,27 +46,33 @@ public class BookListController {
     Integer categoryId = searchCategoryId != null
         ? searchCategoryId
         : (Integer) session.getAttribute(BookConstants.SESSION_SEARCH_CATEGORY_ID);
+    String publisher = resolveSearchValue(searchPublisher, session,
+        BookConstants.SESSION_SEARCH_PUBLISHER);
 
     session.setAttribute(BookConstants.SESSION_SEARCH_TITLE, title);
     session.setAttribute(BookConstants.SESSION_SEARCH_AUTHOR, author);
     session.setAttribute(BookConstants.SESSION_SEARCH_CATEGORY_ID, categoryId);
+    session.setAttribute(BookConstants.SESSION_SEARCH_PUBLISHER, publisher);
 
     String column = sortColumn != null ? sortColumn : BookConstants.DEFAULT_SORT_COLUMN;
     String order = sortOrder != null ? sortOrder : BookConstants.DEFAULT_SORT_ORDER;
     int currentPage = Math.max(1, page);
 
     try {
-      int totalCount = bookService.count(title, author, categoryId);
+      int totalCount = bookService.count(title, author, categoryId, publisher);
       int totalPages = (int) Math.ceil((double) totalCount / BookConstants.PAGE_SIZE);
-      List<Book> books = bookService.findAll(title, author, categoryId, column, order,
+      List<Book> books = bookService.findAll(title, author, categoryId, publisher, column, order,
           currentPage - 1, BookConstants.PAGE_SIZE);
       List<Category> categories = categoryService.findAll();
+      List<String> publishers = bookService.findDistinctPublishers();
 
       model.addAttribute("books", books);
       model.addAttribute("categories", categories);
+      model.addAttribute("publishers", publishers);
       model.addAttribute("searchTitle", title);
       model.addAttribute("searchAuthor", author);
       model.addAttribute("searchCategoryId", categoryId);
+      model.addAttribute("searchPublisher", publisher);
       model.addAttribute("sortColumn", column);
       model.addAttribute("sortOrder", order);
       model.addAttribute("currentPage", currentPage);
@@ -75,7 +82,7 @@ public class BookListController {
       if (totalCount == 0) {
         model.addAttribute("noDataMessage", MessageUtil.getMessage("bk01.message.nodata"));
       } else if ((title != null && !title.isBlank()) || (author != null && !author.isBlank())
-          || categoryId != null) {
+          || categoryId != null || (publisher != null && !publisher.isBlank())) {
         model.addAttribute("searchResultMessage",
             MessageUtil.getMessage("bk01.message.searchresult", totalCount));
       }
@@ -95,6 +102,7 @@ public class BookListController {
     session.removeAttribute(BookConstants.SESSION_SEARCH_TITLE);
     session.removeAttribute(BookConstants.SESSION_SEARCH_AUTHOR);
     session.removeAttribute(BookConstants.SESSION_SEARCH_CATEGORY_ID);
+    session.removeAttribute(BookConstants.SESSION_SEARCH_PUBLISHER);
     return "redirect:/book/list";
   }
 

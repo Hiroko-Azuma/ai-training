@@ -15,7 +15,7 @@
 | 1 | book_id | 書籍ID | INT | - | - | NOT NULL | AUTO_INCREMENT | ○ | - | - | - | 自動採番 |
 | 2 | title | タイトル | VARCHAR | 100 | - | NOT NULL | - | - | - | - | ○ | - |
 | 3 | author | 著者 | VARCHAR | 50 | - | NOT NULL | - | - | - | - | ○ | - |
-| 4 | publisher | 出版社 | VARCHAR | 50 | - | NOT NULL | - | - | - | - | - | - |
+| 4 | publisher | 出版社 | VARCHAR | 50 | - | NOT NULL | - | - | - | - | ○ | 出版社検索用にインデックスを追加 |
 | 5 | published_date | 出版日 | DATE | - | - | NOT NULL | - | - | - | - | ○ | YYYY-MM-DD形式 |
 | 6 | isbn | ISBN | VARCHAR | 13 | - | NOT NULL | - | - | - | ○ | ○ | 10桁または13桁 |
 | 7 | category_id | カテゴリID | INT | - | - | NOT NULL | - | - | ○ | - | ○ | categories.category_id参照 |
@@ -33,6 +33,7 @@
 | idx_isbn | UNIQUE | isbn | ISBN重複チェック、ISBN検索 |
 | idx_title | INDEX | title | タイトル検索の高速化 |
 | idx_author | INDEX | author | 著者検索の高速化 |
+| idx_publisher | INDEX | publisher | 出版社検索の高速化、選択肢（DISTINCT）取得の高速化 |
 | idx_category_id | INDEX | category_id | カテゴリフィルタの高速化 |
 | idx_published_date | INDEX | published_date | 出版日ソートの高速化 |
 
@@ -82,6 +83,7 @@ CREATE TABLE books (
     UNIQUE KEY idx_isbn (isbn),
     INDEX idx_title (title),
     INDEX idx_author (author),
+    INDEX idx_publisher (publisher),
     INDEX idx_category_id (category_id),
     INDEX idx_published_date (published_date),
     FOREIGN KEY (category_id) REFERENCES categories(category_id),
@@ -299,6 +301,7 @@ CREATE TABLE books (
     UNIQUE KEY idx_isbn (isbn),
     INDEX idx_title (title),
     INDEX idx_author (author),
+    INDEX idx_publisher (publisher),
     INDEX idx_category_id (category_id),
     INDEX idx_published_date (published_date),
     FOREIGN KEY (category_id) REFERENCES categories(category_id),
@@ -447,3 +450,4 @@ ORDER BY created_at DESC;
 | 1.1 | 2026-03-27 | レビュー投稿画面（BK11〜BK13）追加に伴う記載整備 | - |
 | 1.2 | 2026-03-27 | カテゴリをマスタテーブル（categories）化。booksテーブルのcategoryカラムをcategory_id（FK）に変更 | - |
 | 1.3 | 2026-08-07 | 「おすすめフラグ」追加に伴い、booksテーブルにis_recommended列（BOOLEAN、NOT NULL、DEFAULT FALSE）を追加 | - |
+| 1.4 | 2026-08-07 | 出版社検索機能追加に伴い、booksテーブルのpublisher列にインデックス（idx_publisher）を追加。出版社はDBでマスタ管理しないため新規マスタテーブルは追加せず、booksテーブルのDISTINCT取得の高速化のみ対応 | - |
