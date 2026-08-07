@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BookFormValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">training-bookshelf</a> &gt; <a href="index.source.html" class="el_package">jp.co.skig.training.bookshelf.util</a> &gt; <span class="el_source">BookFormValidator.java</span></div><h1>BookFormValidator.java</h1><pre class="source lang-java linenums">package jp.co.skig.training.bookshelf.util;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import jp.co.skig.training.bookshelf.constants.BookConstants;
+import jp.co.skig.training.bookshelf.form.BookRegisterForm;
+
+/**
+ * 書籍登録・編集フォームのバリデーションユーティリティ
+ */
+public final class BookFormValidator {
+
+  private BookFormValidator() {
+  }
+
+  /**
+   * 書籍登録・編集フォームの入力値を検証する
+   * @param form 入力フォーム
+   * @return 項目名をキーとしたエラーメッセージのマップ
+   */
+  public static Map&lt;String, String&gt; validate(BookRegisterForm form) {
+<span class="fc" id="L25">    Map&lt;String, String&gt; errors = new LinkedHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L27">    validateTitle(form.getTitle(), errors);</span>
+<span class="fc" id="L28">    validateAuthor(form.getAuthor(), errors);</span>
+<span class="fc" id="L29">    validatePublisher(form.getPublisher(), errors);</span>
+<span class="fc" id="L30">    validatePublishedDate(form.getPublishedDate(), errors);</span>
+<span class="fc" id="L31">    validateIsbn(form.getIsbn(), errors);</span>
+<span class="fc" id="L32">    validateCategoryId(form.getCategoryId(), errors);</span>
+<span class="fc" id="L33">    validatePrice(form.getPrice(), errors);</span>
+<span class="fc" id="L34">    validateDescription(form.getDescription(), errors);</span>
+
+<span class="fc" id="L36">    return errors;</span>
+  }
+
+  private static void validateTitle(String title, Map&lt;String, String&gt; errors) {
+<span class="fc bfc" id="L40" title="All 4 branches covered.">    if (title == null || title.isBlank()) {</span>
+<span class="fc" id="L41">      errors.put(&quot;title&quot;, MessageUtil.getMessage(&quot;validation.required&quot;, &quot;タイトル&quot;));</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">    } else if (title.length() &gt; BookConstants.TITLE_MAX_LENGTH) {</span>
+<span class="fc" id="L43">      errors.put(&quot;title&quot;,</span>
+<span class="fc" id="L44">          MessageUtil.getMessage(&quot;validation.length.max&quot;, &quot;タイトル&quot;, BookConstants.TITLE_MAX_LENGTH));</span>
+    }
+<span class="fc" id="L46">  }</span>
+
+  private static void validateAuthor(String author, Map&lt;String, String&gt; errors) {
+<span class="fc bfc" id="L49" title="All 4 branches covered.">    if (author == null || author.isBlank()) {</span>
+<span class="fc" id="L50">      errors.put(&quot;author&quot;, MessageUtil.getMessage(&quot;validation.required&quot;, &quot;著者&quot;));</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">    } else if (author.length() &gt; BookConstants.AUTHOR_MAX_LENGTH) {</span>
+<span class="fc" id="L52">      errors.put(&quot;author&quot;,</span>
+<span class="fc" id="L53">          MessageUtil.getMessage(&quot;validation.length.max&quot;, &quot;著者&quot;, BookConstants.AUTHOR_MAX_LENGTH));</span>
+    }
+<span class="fc" id="L55">  }</span>
+
+  private static void validatePublisher(String publisher, Map&lt;String, String&gt; errors) {
+<span class="fc bfc" id="L58" title="All 4 branches covered.">    if (publisher == null || publisher.isBlank()) {</span>
+<span class="fc" id="L59">      errors.put(&quot;publisher&quot;, MessageUtil.getMessage(&quot;validation.required&quot;, &quot;出版社&quot;));</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">    } else if (publisher.length() &gt; BookConstants.PUBLISHER_MAX_LENGTH) {</span>
+<span class="fc" id="L61">      errors.put(&quot;publisher&quot;,</span>
+<span class="fc" id="L62">          MessageUtil.getMessage(&quot;validation.length.max&quot;, &quot;出版社&quot;, BookConstants.PUBLISHER_MAX_LENGTH));</span>
+    }
+<span class="fc" id="L64">  }</span>
+
+  private static void validatePublishedDate(String publishedDate, Map&lt;String, String&gt; errors) {
+<span class="fc bfc" id="L67" title="All 4 branches covered.">    if (publishedDate == null || publishedDate.isBlank()) {</span>
+<span class="fc" id="L68">      errors.put(&quot;publishedDate&quot;, MessageUtil.getMessage(&quot;validation.required&quot;, &quot;出版日&quot;));</span>
+<span class="fc" id="L69">      return;</span>
+    }
+    try {
+<span class="fc" id="L72">      LocalDate date = LocalDate.parse(publishedDate, DateTimeFormatter.ISO_LOCAL_DATE);</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">      if (date.isAfter(LocalDate.now())) {</span>
+<span class="fc" id="L74">        errors.put(&quot;publishedDate&quot;, MessageUtil.getMessage(&quot;validation.date.future&quot;, &quot;出版日&quot;));</span>
+      }
+<span class="fc" id="L76">    } catch (DateTimeParseException e) {</span>
+<span class="fc" id="L77">      errors.put(&quot;publishedDate&quot;, MessageUtil.getMessage(&quot;validation.date.format&quot;, &quot;出版日&quot;));</span>
+<span class="fc" id="L78">    }</span>
+<span class="fc" id="L79">  }</span>
+
+  private static void validateIsbn(String isbn, Map&lt;String, String&gt; errors) {
+<span class="fc bfc" id="L82" title="All 4 branches covered.">    if (isbn == null || isbn.isBlank()) {</span>
+<span class="fc" id="L83">      errors.put(&quot;isbn&quot;, MessageUtil.getMessage(&quot;validation.required&quot;, &quot;ISBN&quot;));</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">    } else if (!isbn.matches(&quot;\\d{10}|\\d{13}&quot;)) {</span>
+<span class="fc" id="L85">      errors.put(&quot;isbn&quot;, MessageUtil.getMessage(&quot;validation.isbn.format&quot;));</span>
+    }
+<span class="fc" id="L87">  }</span>
+
+  private static void validateCategoryId(String categoryId, Map&lt;String, String&gt; errors) {
+<span class="fc bfc" id="L90" title="All 4 branches covered.">    if (categoryId == null || categoryId.isBlank()) {</span>
+<span class="fc" id="L91">      errors.put(&quot;categoryId&quot;, MessageUtil.getMessage(&quot;validation.required&quot;, &quot;カテゴリ&quot;));</span>
+    }
+<span class="fc" id="L93">  }</span>
+
+  private static void validatePrice(String price, Map&lt;String, String&gt; errors) {
+<span class="fc bfc" id="L96" title="All 4 branches covered.">    if (price == null || price.isBlank()) {</span>
+<span class="fc" id="L97">      errors.put(&quot;price&quot;, MessageUtil.getMessage(&quot;validation.required&quot;, &quot;価格&quot;));</span>
+<span class="fc" id="L98">      return;</span>
+    }
+    try {
+<span class="fc" id="L101">      int value = Integer.parseInt(price);</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">      if (value &lt; 0) {</span>
+<span class="fc" id="L103">        errors.put(&quot;price&quot;, MessageUtil.getMessage(&quot;validation.number.min&quot;, &quot;価格&quot;, 0));</span>
+      }
+<span class="fc" id="L105">    } catch (NumberFormatException e) {</span>
+<span class="fc" id="L106">      errors.put(&quot;price&quot;, MessageUtil.getMessage(&quot;validation.number.format&quot;, &quot;価格&quot;));</span>
+<span class="fc" id="L107">    }</span>
+<span class="fc" id="L108">  }</span>
+
+  private static void validateDescription(String description, Map&lt;String, String&gt; errors) {
+<span class="fc bfc" id="L111" title="All 4 branches covered.">    if (description != null &amp;&amp; description.length() &gt; BookConstants.DESCRIPTION_MAX_LENGTH) {</span>
+<span class="fc" id="L112">      errors.put(&quot;description&quot;,</span>
+<span class="fc" id="L113">          MessageUtil.getMessage(&quot;validation.length.max&quot;, &quot;概要&quot;, BookConstants.DESCRIPTION_MAX_LENGTH));</span>
+    }
+<span class="fc" id="L115">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -4,5 +4,6 @@
         "training-bookshelf/src/main/java",
         "training-bookshelf/src/test/java"
     ],
-    "java.dependency.syncWithFolderExplorer": false
+    "java.dependency.syncWithFolderExplorer": false,
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

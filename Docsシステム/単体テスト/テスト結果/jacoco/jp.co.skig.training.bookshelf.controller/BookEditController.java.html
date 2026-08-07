@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BookEditController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">training-bookshelf</a> &gt; <a href="index.source.html" class="el_package">jp.co.skig.training.bookshelf.controller</a> &gt; <span class="el_source">BookEditController.java</span></div><h1>BookEditController.java</h1><pre class="source lang-java linenums">package jp.co.skig.training.bookshelf.controller;
+
+import jakarta.servlet.http.HttpSession;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import jp.co.skig.training.bookshelf.constants.BookConstants;
+import jp.co.skig.training.bookshelf.entity.Book;
+import jp.co.skig.training.bookshelf.entity.Category;
+import jp.co.skig.training.bookshelf.form.BookEditForm;
+import jp.co.skig.training.bookshelf.service.BookService;
+import jp.co.skig.training.bookshelf.service.CategoryService;
+import jp.co.skig.training.bookshelf.util.BookFormValidator;
+import jp.co.skig.training.bookshelf.util.ExceptionLogger;
+import jp.co.skig.training.bookshelf.util.MessageUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+/**
+ * 書籍編集コントローラー（BK06-BK08）
+ */
+@Controller
+@RequiredArgsConstructor
+public class BookEditController {
+
+  private final BookService bookService;
+  private final CategoryService categoryService;
+
+  // ========================================
+  // BK06: 書籍編集入力画面
+  // ========================================
+
+  /**
+   * 書籍編集入力画面を表示
+   */
+  @GetMapping(&quot;/book/edit/{bookId}&quot;)
+  public String editForm(@PathVariable Integer bookId, HttpSession session, Model model) {
+<span class="fc" id="L45">    BookEditForm sessionForm = (BookEditForm) session.getAttribute(BookConstants.SESSION_EDIT_FORM);</span>
+<span class="fc bfc" id="L46" title="All 4 branches covered.">    if (sessionForm != null &amp;&amp; bookId.equals(sessionForm.getBookId())) {</span>
+<span class="fc" id="L47">      model.addAttribute(&quot;bookEditForm&quot;, sessionForm);</span>
+<span class="fc" id="L48">      model.addAttribute(&quot;categories&quot;, categoryService.findAll());</span>
+<span class="fc" id="L49">      return &quot;book/BK06_BookEditInput&quot;;</span>
+    }
+
+<span class="fc" id="L52">    Book book = bookService.findById(bookId);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">    if (book == null) {</span>
+<span class="fc" id="L54">      model.addAttribute(&quot;errorMessage&quot;, MessageUtil.getMessage(&quot;error.notfound.book&quot;));</span>
+<span class="fc" id="L55">      model.addAttribute(&quot;redirectUrl&quot;, &quot;/book/list&quot;);</span>
+<span class="fc" id="L56">      return &quot;book/error&quot;;</span>
+    }
+
+<span class="fc" id="L59">    model.addAttribute(&quot;bookEditForm&quot;, toForm(book));</span>
+<span class="fc" id="L60">    model.addAttribute(&quot;categories&quot;, categoryService.findAll());</span>
+<span class="fc" id="L61">    return &quot;book/BK06_BookEditInput&quot;;</span>
+  }
+
+  // ========================================
+  // BK07: 書籍編集確認画面
+  // ========================================
+
+  /**
+   * 編集確認画面を表示（セッションの編集値から復元）
+   */
+  @GetMapping(&quot;/book/edit/{bookId}/confirm&quot;)
+  public String confirmEdit(@PathVariable Integer bookId, HttpSession session, Model model) {
+<span class="fc" id="L73">    BookEditForm form = (BookEditForm) session.getAttribute(BookConstants.SESSION_EDIT_FORM);</span>
+<span class="fc bfc" id="L74" title="All 4 branches covered.">    if (form == null || !bookId.equals(form.getBookId())) {</span>
+<span class="fc" id="L75">      return &quot;redirect:/book/edit/&quot; + bookId;</span>
+    }
+<span class="fc" id="L77">    model.addAttribute(&quot;bookEditForm&quot;, form);</span>
+<span class="fc" id="L78">    model.addAttribute(&quot;categoryName&quot;, findCategoryName(form.getCategoryId()));</span>
+<span class="fc" id="L79">    return &quot;book/BK07_BookEditConfirm&quot;;</span>
+  }
+
+  /**
+   * 入力内容をバリデーションして確認画面へ遷移
+   */
+  @PostMapping(&quot;/book/edit/{bookId}/confirm&quot;)
+  public String confirmEdit(@PathVariable Integer bookId,
+      @ModelAttribute BookEditForm bookEditForm, HttpSession session, Model model) {
+<span class="fc" id="L88">    bookEditForm.setBookId(bookId);</span>
+<span class="fc" id="L89">    Map&lt;String, String&gt; errors = BookFormValidator.validate(bookEditForm);</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">    if (!errors.isEmpty()) {</span>
+<span class="fc" id="L91">      model.addAttribute(&quot;bookEditForm&quot;, bookEditForm);</span>
+<span class="fc" id="L92">      model.addAttribute(&quot;categories&quot;, categoryService.findAll());</span>
+<span class="fc" id="L93">      model.addAttribute(&quot;errors&quot;, errors);</span>
+<span class="fc" id="L94">      return &quot;book/BK06_BookEditInput&quot;;</span>
+    }
+
+<span class="fc" id="L97">    session.setAttribute(BookConstants.SESSION_EDIT_FORM, bookEditForm);</span>
+<span class="fc" id="L98">    return &quot;redirect:/book/edit/&quot; + bookId + &quot;/confirm&quot;;</span>
+  }
+
+  /**
+   * 書籍を更新する
+   */
+  @PostMapping(&quot;/book/edit/{bookId}/update&quot;)
+  public String update(@PathVariable Integer bookId, HttpSession session, Model model) {
+<span class="fc" id="L106">    BookEditForm form = (BookEditForm) session.getAttribute(BookConstants.SESSION_EDIT_FORM);</span>
+<span class="fc bfc" id="L107" title="All 4 branches covered.">    if (form == null || !bookId.equals(form.getBookId())) {</span>
+<span class="fc" id="L108">      return &quot;redirect:/book/edit/&quot; + bookId;</span>
+    }
+
+    try {
+<span class="fc bfc" id="L112" title="All 2 branches covered.">      if (bookService.isDuplicateIsbn(form.getIsbn(), bookId)) {</span>
+<span class="fc" id="L113">        model.addAttribute(&quot;bookEditForm&quot;, form);</span>
+<span class="fc" id="L114">        model.addAttribute(&quot;categoryName&quot;, findCategoryName(form.getCategoryId()));</span>
+<span class="fc" id="L115">        model.addAttribute(&quot;errorMessage&quot;, MessageUtil.getMessage(&quot;validation.duplicate.isbn&quot;));</span>
+<span class="fc" id="L116">        return &quot;book/BK07_BookEditConfirm&quot;;</span>
+      }
+
+<span class="fc" id="L119">      Book book = toBook(form);</span>
+<span class="fc" id="L120">      int updateCount = bookService.update(book);</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">      if (updateCount == 0) {</span>
+<span class="fc" id="L122">        session.removeAttribute(BookConstants.SESSION_EDIT_FORM);</span>
+<span class="fc" id="L123">        model.addAttribute(&quot;errorMessage&quot;, MessageUtil.getMessage(&quot;error.concurrent.update&quot;));</span>
+<span class="fc" id="L124">        model.addAttribute(&quot;redirectUrl&quot;, &quot;/book/detail/&quot; + bookId);</span>
+<span class="fc" id="L125">        return &quot;book/error&quot;;</span>
+      }
+
+<span class="fc" id="L128">      session.removeAttribute(BookConstants.SESSION_EDIT_FORM);</span>
+<span class="fc" id="L129">      return &quot;redirect:/book/edit/complete?bookId=&quot; + bookId;</span>
+<span class="fc" id="L130">    } catch (Exception e) {</span>
+<span class="fc" id="L131">      ExceptionLogger.log(e);</span>
+<span class="fc" id="L132">      model.addAttribute(&quot;bookEditForm&quot;, form);</span>
+<span class="fc" id="L133">      model.addAttribute(&quot;categoryName&quot;, findCategoryName(form.getCategoryId()));</span>
+<span class="fc" id="L134">      model.addAttribute(&quot;errorMessage&quot;, MessageUtil.getMessage(&quot;db.error.update&quot;));</span>
+<span class="fc" id="L135">      return &quot;book/BK07_BookEditConfirm&quot;;</span>
+    }
+  }
+
+  /**
+   * 編集をキャンセルして詳細画面に戻る
+   */
+  @GetMapping(&quot;/book/edit/{bookId}/cancel&quot;)
+  public String cancelEdit(@PathVariable Integer bookId, HttpSession session) {
+<span class="fc" id="L144">    session.removeAttribute(BookConstants.SESSION_EDIT_FORM);</span>
+<span class="fc" id="L145">    return &quot;redirect:/book/detail/&quot; + bookId;</span>
+  }
+
+  // ========================================
+  // BK08: 書籍編集完了画面
+  // ========================================
+
+  /**
+   * 更新完了画面を表示
+   */
+  @GetMapping(&quot;/book/edit/complete&quot;)
+  public String updateComplete(@RequestParam Integer bookId, Model model) {
+<span class="fc" id="L157">    model.addAttribute(&quot;bookId&quot;, bookId);</span>
+<span class="fc" id="L158">    return &quot;book/BK08_BookEditComplete&quot;;</span>
+  }
+
+  private String findCategoryName(String categoryId) {
+<span class="fc bfc" id="L162" title="All 2 branches covered.">    if (categoryId == null) {</span>
+<span class="fc" id="L163">      return null;</span>
+    }
+<span class="fc" id="L165">    List&lt;Category&gt; categories = categoryService.findAll();</span>
+<span class="fc" id="L166">    return categories.stream()</span>
+<span class="fc" id="L167">        .filter(c -&gt; c.getCategoryId().toString().equals(categoryId))</span>
+<span class="fc" id="L168">        .map(Category::getCategoryName)</span>
+<span class="fc" id="L169">        .findFirst()</span>
+<span class="fc" id="L170">        .orElse(null);</span>
+  }
+
+  private BookEditForm toForm(Book book) {
+<span class="fc" id="L174">    BookEditForm form = new BookEditForm();</span>
+<span class="fc" id="L175">    form.setBookId(book.getBookId());</span>
+<span class="fc" id="L176">    form.setTitle(book.getTitle());</span>
+<span class="fc" id="L177">    form.setAuthor(book.getAuthor());</span>
+<span class="fc" id="L178">    form.setPublisher(book.getPublisher());</span>
+<span class="fc" id="L179">    form.setPublishedDate(book.getPublishedDate().toString());</span>
+<span class="fc" id="L180">    form.setIsbn(book.getIsbn());</span>
+<span class="fc" id="L181">    form.setCategoryId(book.getCategoryId().toString());</span>
+<span class="fc" id="L182">    form.setPrice(book.getPrice().toString());</span>
+<span class="fc" id="L183">    form.setDescription(book.getDescription());</span>
+<span class="fc" id="L184">    form.setUpdatedAt(book.getUpdatedAt().toString());</span>
+<span class="fc" id="L185">    return form;</span>
+  }
+
+  private Book toBook(BookEditForm form) {
+<span class="fc" id="L189">    Book book = new Book();</span>
+<span class="fc" id="L190">    book.setBookId(form.getBookId());</span>
+<span class="fc" id="L191">    book.setTitle(form.getTitle());</span>
+<span class="fc" id="L192">    book.setAuthor(form.getAuthor());</span>
+<span class="fc" id="L193">    book.setPublisher(form.getPublisher());</span>
+<span class="fc" id="L194">    book.setPublishedDate(LocalDate.parse(form.getPublishedDate()));</span>
+<span class="fc" id="L195">    book.setIsbn(form.getIsbn());</span>
+<span class="fc" id="L196">    book.setCategoryId(Integer.valueOf(form.getCategoryId()));</span>
+<span class="fc" id="L197">    book.setPrice(Integer.valueOf(form.getPrice()));</span>
+<span class="fc" id="L198">    book.setDescription(form.getDescription());</span>
+<span class="fc" id="L199">    book.setUpdatedAt(LocalDateTime.parse(form.getUpdatedAt()));</span>
+<span class="fc" id="L200">    return book;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

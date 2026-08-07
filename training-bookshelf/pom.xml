@@ -116,6 +116,12 @@
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<excludes>
+								<!-- Spring Boot起動クラスはmain()のみでロジックを含まないため計測対象外 -->
+								<exclude>**/TrainingBookshelfApplication.class</exclude>
+							</excludes>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
