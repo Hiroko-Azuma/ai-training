@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話15 ｜ レビュー観点はどう変わるか ― 読む力が価値になる</title>
+<style>
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#e9f2ee; --card:#fff; --line:#dde7e2;
+  --navy:#05412c; --green:#059669; --green50:#effaf5; --green100:#d5f5e8; --green700:#04704e;
+  --blue:#1a5fb4; --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --amber:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea;
+  --r:14px; --theme:var(--green); --theme-d:var(--navy); --theme50:var(--green50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px;line-height:1.85;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%,#d8efe4 0%,transparent 45%),
+                   radial-gradient(circle at 100% 0%,#dce7f7 0%,transparent 40%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+.hero{background:linear-gradient(135deg,#03291a 0%,#0b6b4f 55%,#12a37a 100%);color:#fff;border-radius:20px;
+  padding:40px 40px 34px;position:relative;overflow:hidden;box-shadow:0 18px 44px rgba(3,41,26,.28)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,#4cc9f0,#f7c873,#4cc9f0)}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 320px;min-width:250px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#8ff0d0;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.85rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#bdf0dd}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 12px;
+  border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#e6fff6}
+.badge.hl{background:#f7c873;border-color:transparent;color:#402400}
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;box-shadow:0 6px 26px rgba(3,41,26,.10);
+  overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+.msg{position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);border:1.5px solid var(--green100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy)}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;color:var(--theme);opacity:.35;font-family:Georgia,serif}
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;padding-left:13px;
+  border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:var(--green700);margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+figure{margin:20px 0 24px;background:#f6faf8;border:1px solid var(--line);border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* 指摘分布 */
+.dist{margin:16px 0 8px}
+.dhead{display:flex;font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;
+  padding:0 0 8px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.dhead .c1{flex:0 0 190px}.dhead .c2{flex:1}.dhead .c3{flex:1}.dhead .c4{flex:0 0 130px;text-align:right}
+.drow{display:flex;align-items:center;padding:7px 0;border-bottom:1px dashed #e6efea}
+.drow:last-child{border-bottom:none}
+.drow .nm{flex:0 0 190px;font-size:.9rem;color:var(--ink2)}
+.drow .old,.drow .new{flex:1;padding-right:12px}
+.drow .b{height:16px;border-radius:4px;display:block}
+.drow .b.o{background:#9db4cc}
+.drow .b.n{background:#059669}
+.drow .b.n.hot{background:#e5484d}
+.drow .tag{flex:0 0 130px;text-align:right;font-size:11.5px;font-weight:700}
+.drow .tag.down{color:#6b7c93}
+.drow .tag.up{color:#b4232a}
+.dsep{height:2px;background:var(--line);margin:10px 0}
+@media (max-width:640px){
+  .dhead .c1,.drow .nm{flex:0 0 110px}.dhead .c4,.drow .tag{flex:0 0 74px;font-size:10.5px}
+  .drow .nm{font-size:.8rem}}
+
+/* 見る順番 */
+.order{counter-reset:o;margin:16px 0 22px}
+.oi{position:relative;padding:14px 18px 14px 58px;background:#fff;border:1px solid var(--line);
+  border-radius:11px;margin-bottom:9px;font-size:.94rem;color:var(--ink2);line-height:1.7}
+.oi::before{counter-increment:o;content:counter(o);position:absolute;left:15px;top:14px;width:26px;height:26px;
+  border-radius:50%;background:var(--green);color:#fff;font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+.oi strong{color:var(--navy)}
+.oi .sub{display:block;font-size:.85rem;color:var(--muted);margin-top:2px}
+.oi::after{content:'';position:absolute;left:28px;bottom:-10px;width:2px;height:10px;background:#cfe0d8}
+.oi:last-child::after{display:none}
+.oi.last::before{background:#9db4cc}
+
+/* 担当分担 */
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:18px 0 22px}
+.wc{border-radius:12px;padding:18px 20px;color:#fff;box-shadow:0 6px 18px rgba(3,41,26,.18)}
+.wc .ic{font-size:1.7rem;display:block;margin-bottom:4px}
+.wc .t{font-size:1.02rem;font-weight:700;margin-bottom:6px}
+.wc .d{font-size:.88rem;line-height:1.7;opacity:.95}
+.wc.m1{background:linear-gradient(135deg,#334155,#64748b)}
+.wc.m2{background:linear-gradient(135deg,#2c2c7a,#5b5bd6)}
+.wc.h1{background:linear-gradient(135deg,#03291a,#0b6b4f);outline:3px solid #f7c873;outline-offset:-3px}
+
+blockquote{margin:20px 0;padding:16px 22px;background:var(--green50);border-left:5px solid var(--theme);
+  border-radius:0 10px 10px 0;color:var(--green700);font-size:.95rem}
+blockquote strong{color:var(--navy)}
+blockquote.warn{background:#fdecec;border-left-color:var(--red);color:#7d1a1e}
+blockquote.warn strong{color:#b4232a}
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#03291a,#0b6b4f);color:#d7fff1;font-size:1.06rem;font-weight:700;
+  line-height:1.7;box-shadow:0 6px 18px rgba(3,41,26,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600}
+th.past{background:#5b6c82}th.future{background:#04704e}
+td{padding:11px 15px;border-bottom:1px solid #e6efea;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f5faf8}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+code{font-family:'Consolas','SFMono-Regular',monospace;font-size:.88em;background:#eaf5f0;color:var(--green700);padding:1px 6px;border-radius:4px}
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;background:linear-gradient(135deg,#03291a,#0b6b4f);
+  color:#e2fff4;box-shadow:0 8px 24px rgba(3,41,26,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#d3f5e7}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#ffd98a}
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;background:#fbfdfc;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;color:var(--navy);
+  background:#eef7f3;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+details.notes strong{color:var(--navy)}
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--green700);background:var(--green100);
+  border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+@media (max-width:640px){.hero{padding:28px 22px 24px}.hero h1{font-size:1.36rem}
+  .slide-body{padding:22px 18px 26px}.msg{font-size:1.05rem;padding:18px 18px 18px 52px}}
+@media print{body{background:#fff}.wrap{margin:0;max-width:none}
+  .slide,.hero{box-shadow:none;break-inside:avoid}details.notes{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.15 ／ レビュー観点</div>
+      <h1>レビュー観点はどう変わるか<br>― 読む力が価値になる</h1>
+      <p class="sub">AIが書いたコード、あなたはどこを見ますか？</p>
+      <div class="badges">
+        <span class="badge">🛠 実務</span>
+        <span class="badge">⏱ 6分（スライド2枚）</span>
+        <span class="badge">📍 UT実行の待ち時間（小話05の後）</span>
+        <span class="badge hl">優先度 ★★★</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 320 200" role="img" aria-label="コードを虫眼鏡で設計書と突き合わせて見ているイラスト">
+        <!-- コード面 -->
+        <rect x="16" y="34" width="150" height="132" rx="10" fill="#0d2b1e" stroke="#12a37a"/>
+        <g font-family="Consolas, monospace" font-size="9" fill="#7fe8c8">
+          <text x="28" y="54">if (list.isEmpty())</text>
+          <text x="28" y="70">  return "empty";</text>
+          <text x="28" y="86">for (Book b : list)</text>
+          <text x="28" y="102">  b.setStatus(1);</text>
+          <text x="28" y="118">save(list);</text>
+          <text x="28" y="134">// 追加した処理</text>
+          <text x="28" y="150">notify(user);</text>
+        </g>
+        <!-- 虫眼鏡 -->
+        <circle cx="132" cy="118" r="30" fill="rgba(255,255,255,.14)" stroke="#f7c873" stroke-width="4"/>
+        <line x1="153" y1="139" x2="176" y2="162" stroke="#f7c873" stroke-width="6" stroke-linecap="round"/>
+        <!-- 設計書 -->
+        <rect x="196" y="42" width="106" height="116" rx="9" fill="#fff" opacity=".95"/>
+        <g fill="#8fd9bd">
+          <rect x="210" y="58" width="76" height="6" rx="3"/>
+          <rect x="210" y="74" width="58" height="6" rx="3"/>
+          <rect x="210" y="90" width="76" height="6" rx="3"/>
+          <rect x="210" y="106" width="48" height="6" rx="3"/>
+        </g>
+        <rect x="210" y="124" width="76" height="18" rx="5" fill="#fee9ea"/>
+        <text x="248" y="137" font-size="9.5" font-weight="700" fill="#b4232a" text-anchor="middle">仕様と違う？</text>
+        <text x="249" y="176" font-size="11.5" font-weight="700" fill="#bdf0dd" text-anchor="middle">設計書と突合</text>
+        <!-- 双方向矢印 -->
+        <path d="M170 96 H192" stroke="#f7c873" stroke-width="3"/>
+        <path d="M176 90 L167 96 L176 102 Z" fill="#f7c873"/>
+        <path d="M186 90 L195 96 L186 102 Z" fill="#f7c873"/>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- SLIDE 1 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> 指摘の分布が変わる</div>
+  <div class="slide-body">
+
+    <div class="msg">見つけやすいバグが消え、<br>見つけにくいバグだけが残る</div>
+
+    <h2>掴み ── AIが書いたコード、あなたはどこを見ますか？</h2>
+
+    <h2>指摘の分布が、はっきり変わる</h2>
+    <figure>
+      <div class="dist">
+        <div class="dhead"><span class="c1">指摘の種類</span><span class="c2">【従来】</span><span class="c3">【AI活用時】</span><span class="c4"></span></div>
+
+        <div class="drow"><span class="nm">タイポ・構文</span>
+          <span class="old"><i class="b o" style="width:36%"></i></span>
+          <span class="new"><i class="b n" style="width:2%"></i></span>
+          <span class="tag down">ほぼ消える</span></div>
+        <div class="drow"><span class="nm">命名・フォーマット</span>
+          <span class="old"><i class="b o" style="width:56%"></i></span>
+          <span class="new"><i class="b n" style="width:18%"></i></span>
+          <span class="tag down">ルールで潰せる</span></div>
+        <div class="drow"><span class="nm">定型的な実装漏れ</span>
+          <span class="old"><i class="b o" style="width:46%"></i></span>
+          <span class="new"><i class="b n" style="width:10%"></i></span>
+          <span class="tag down">減る</span></div>
+
+        <div class="dsep"></div>
+
+        <div class="drow"><span class="nm">仕様の取り違え</span>
+          <span class="old"><i class="b o" style="width:28%"></i></span>
+          <span class="new"><i class="b n hot" style="width:76%"></i></span>
+          <span class="tag up">★ 増える</span></div>
+        <div class="drow"><span class="nm">過剰実装・余計な変更</span>
+          <span class="old"><i class="b o" style="width:18%"></i></span>
+          <span class="new"><i class="b n hot" style="width:66%"></i></span>
+          <span class="tag up">★ 増える</span></div>
+        <div class="drow"><span class="nm">境界条件・異常系</span>
+          <span class="old"><i class="b o" style="width:28%"></i></span>
+          <span class="new"><i class="b n hot" style="width:58%"></i></span>
+          <span class="tag up">★ 残る／増える</span></div>
+        <div class="drow"><span class="nm">既存への影響</span>
+          <span class="old"><i class="b o" style="width:18%"></i></span>
+          <span class="new"><i class="b n hot" style="width:66%"></i></span>
+          <span class="tag up">★ 増える</span></div>
+      </div>
+      <figcaption>減るのは「楽な指摘」。残るのは、一番頭を使う部分だけ</figcaption>
+    </figure>
+
+    <h2>なぜ増える側が増えるのか</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:34%">増える指摘</th><th>理由</th></tr></thead>
+        <tbody>
+          <tr><td>🎯 <strong>仕様の取り違え</strong></td><td>AIは分からない所を聞き返さず、それらしく埋める<span class="xref">→ 小話05</span></td></tr>
+          <tr><td>📦 <strong>過剰実装</strong></td><td>頼んでいない機能・エラー処理まで"良かれと思って"付ける</td></tr>
+          <tr><td>🔗 <strong>既存への影響</strong></td><td>一貫性を取ろうとして周辺まで書き換える<span class="xref">→ 小話12</span></td></tr>
+          <tr><td>⚡ <strong>量の問題</strong></td><td>生成量そのものが増える。同じ密度では見きれない</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <blockquote class="warn">
+      ⚠ <strong>動くコードほど危ない</strong>。コンパイルもテストも通るが、仕様と違う ── これは機械では絶対に検出できない
+    </blockquote>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>レビューの負荷が減ると思われがちですが、<strong>減るのは楽な指摘の方</strong>です。タイポやフォーマットは消えます</li>
+          <li>残るのは「<strong>この実装、仕様と合ってる？</strong>」という、一番頭を使う部分だけ。しかも量は増えます</li>
+          <li>そして一番危ないのが、<strong>動いてしまう嘘</strong>です。テストも通る、レビューもさらっと通る。でも仕様と違う。これは人間しか気づけません</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> 見る順番と役割分担</div>
+  <div class="slide-body">
+
+    <div class="msg">レビューは「粗探し」から<br>「設計意図との突合」へ</div>
+
+    <h2>🔍 見る順番を変える</h2>
+    <div class="order">
+      <div class="oi"><strong>変更ファイル一覧を見る</strong>
+        <span class="sub">頼んでいない所が変わっていないか（既存テストの書き換えは特に警戒）</span></div>
+      <div class="oi"><strong>設計書と突き合わせる</strong>
+        <span class="sub">仕様どおりか。過不足はないか</span></div>
+      <div class="oi"><strong>境界・異常系を見る</strong>
+        <span class="sub">0件／null／上限／権限／同時実行</span></div>
+      <div class="oi"><strong>既存への影響を見る</strong>
+        <span class="sub">呼び出し元、共通処理への変更</span></div>
+      <div class="oi last"><strong>書き方を見る</strong>
+        <span class="sub">ここは最後でいい（ルールとテストで大半は潰れている）</span></div>
+    </div>
+
+    <h2>機械に任せる所／人が見る所を、はっきり分ける</h2>
+    <div class="who">
+      <div class="wc m1">
+        <span class="ic">🤖</span>
+        <div class="t">機械</div>
+        <div class="d">コンパイル・テスト・静的解析<br><small>構文、存在しないAPI、明らかな不整合</small></div>
+      </div>
+      <div class="wc m2">
+        <span class="ic">🤖</span>
+        <div class="t">AI</div>
+        <div class="d">一次レビューをAIにもさせる<br><small>見落とし・観点の洗い出し</small></div>
+      </div>
+      <div class="wc h1">
+        <span class="ic">👤</span>
+        <div class="t">人 ── 最終判断</div>
+        <div class="d"><strong>仕様との一致・業務的な妥当性・影響範囲</strong></div>
+      </div>
+    </div>
+
+    <blockquote>💡 人の時間は、<strong>機械に判断できない所だけ</strong>に使う</blockquote>
+
+    <h2>求められる能力が変わる</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th class="past" style="width:46%">これまで価値だったもの</th><th class="future">これから価値になるもの</th></tr></thead>
+        <tbody>
+          <tr><td>速く正確に書ける</td><td><strong>読んで、正しいか判断できる</strong></td></tr>
+          <tr><td>文法・API を覚えている</td><td><strong>仕様を理解し、疑える</strong></td></tr>
+          <tr><td>実装パターンを知っている</td><td><strong>業務知識・影響範囲を把握している</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hilite">
+      📈 レビュー工数は、むしろ増やす
+      <small>生成量が増えるのに見る人が足りない ── が最大の事故要因（→ 小話18）</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">✅</span><strong>一番危ないのは「動いてしまう嘘」</strong>。ビルドもテストも通る仕様違反は、人間しか止められない</li>
+        <li><span class="ic">✅</span>レビューの入口は<strong>変更ファイル一覧</strong>。頼んでいない変更を最初に潰す</li>
+        <li><span class="ic">✅</span><strong>書き方の指摘はルールファイルへ</strong><span class="xref">→ 小話14</span>。人は仕様の妥当性に集中する</li>
+        <li><span class="ic">📈</span><strong>レビュー工数はむしろ増やす</strong>。生成量が増えるのに見る人が足りない、が最大の事故要因</li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>ここが今日いちばん実務に効く話かもしれません。<strong>AIを入れると、レビューの重要度が上がります</strong></li>
+          <li>「作れる人」の希少性は下がりますが、「<strong>読んで正しさを判断できる人</strong>」の価値は確実に上がります。仕様を理解していて、業務が分かっていて、影響範囲を追える人です</li>
+          <li>つまり皆さんの経験は、むしろここで効いてきます。<strong>書く仕事が減って、判断する仕事が増える</strong>。そう捉えてください</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<footer>AI小話 No.15 ／ レビュー観点はどう変わるか ｜ 🛠 実務 ｜ 6分</footer>
+
+</div>
+</body>
+</html>

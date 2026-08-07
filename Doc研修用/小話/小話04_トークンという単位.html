@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話04 ｜ トークンという単位 ―「日本語は高い」の理由</title>
+<style>
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#eaeff6; --card:#fff; --line:#dfe6ef;
+  --navy:#0f2b4e; --blue:#1a5fb4; --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --accent:#06d6a0; --accent-d:#059669; --accent50:#e7fbf4;
+  --amber:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea;
+  --violet:#5b5bd6; --violet50:#eef0fa;
+  --r:14px; --theme:var(--blue); --theme-d:var(--navy); --theme50:var(--blue50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px;line-height:1.85;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%,#dce7f7 0%,transparent 45%),
+                   radial-gradient(circle at 100% 0%,#e3f6ef 0%,transparent 40%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+
+.hero{background:linear-gradient(135deg,#0b2340 0%,#134c8f 55%,#2a7bd6 100%);color:#fff;
+  border-radius:20px;padding:40px 40px 34px;position:relative;overflow:hidden;
+  box-shadow:0 18px 44px rgba(11,35,64,.28)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,var(--accent),#4cc9f0,var(--accent))}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 320px;min-width:250px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#9ecbff;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.9rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#c9e2ff}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
+  padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.28);color:#eaf4ff}
+.badge.hl{background:var(--accent);border-color:transparent;color:#04301f}
+
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;
+  box-shadow:0 6px 26px rgba(15,43,78,.10);overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;
+  font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+.msg{position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);border:1.5px solid var(--blue100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy)}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;color:var(--theme);opacity:.35;font-family:Georgia,serif}
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;padding-left:13px;
+  border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:#1e4a8a;margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+figure{margin:20px 0 24px;background:#f7fafd;border:1px solid var(--line);border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* トークン分割チップ */
+.tokrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;
+  padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:10px}
+.tokrow .lang{flex:0 0 62px;font-size:11.5px;font-weight:700;text-align:center;
+  padding:3px 0;border-radius:6px}
+.lang.en{background:var(--blue100);color:var(--blue700)}
+.lang.ja{background:#fde9c8;color:#7a3d05}
+.tokrow .src{font-family:'Consolas','SFMono-Regular',monospace;font-size:.92rem;
+  font-weight:700;color:var(--navy);min-width:132px}
+.tokrow .arw{color:var(--muted);font-weight:700}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-family:'Consolas','SFMono-Regular',monospace;font-size:.85rem;
+  padding:2px 9px;border-radius:6px;border:1px solid #b9d3f0;background:#e8f1fd;color:#12447e}
+.chip.j{border-color:#f0cf95;background:#fdf3e3;color:#7a3d05}
+.tokrow .cnt{margin-left:auto;font-size:.85rem;font-weight:700;color:var(--accent-d);white-space:nowrap}
+.tokrow .cnt.hot{color:#b4232a}
+.note{font-size:12.5px;color:var(--muted);margin:-4px 0 18px}
+
+/* 桁感スケール */
+.scale{display:flex;flex-direction:column;gap:10px;margin:18px 0 8px}
+.sc{display:flex;align-items:center;gap:14px}
+.sc .lbl{flex:0 0 230px;font-size:.92rem;color:var(--ink2)}
+.sc .bar{height:22px;border-radius:6px;background:linear-gradient(90deg,#7fe8c8,#1a5fb4)}
+.sc .v{font-size:.86rem;font-weight:700;color:var(--navy);white-space:nowrap}
+@media (max-width:640px){.sc .lbl{flex:0 0 130px;font-size:.82rem}}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0 24px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;
+  box-shadow:0 2px 8px rgba(15,43,78,.06)}
+.card .big{font-size:1.9rem;line-height:1;display:block;margin-bottom:8px}
+.card .t{font-weight:700;color:var(--navy);font-size:1rem;margin-bottom:6px}
+.card .d{font-size:.88rem;color:var(--ink2);line-height:1.7}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 22px}
+.cmp>div{border-radius:10px;padding:16px 18px;font-size:.92rem;line-height:1.9}
+.cmp .bad{background:var(--red50);border:1px solid #f6c9cb;color:#7d1a1e}
+.cmp .good{background:var(--accent50);border:1px solid #a9e8d3;color:#04452f}
+.cmp .h{font-weight:700;display:block;margin-bottom:8px;font-size:.95rem}
+.cmp ul{list-style:none}
+.cmp li{margin-bottom:6px}
+@media (max-width:640px){.cmp{grid-template-columns:1fr}}
+
+blockquote{margin:20px 0;padding:16px 22px;background:var(--blue50);border-left:5px solid var(--theme);
+  border-radius:0 10px 10px 0;color:#1e4a8a;font-size:.95rem}
+blockquote strong{color:var(--navy)}
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#04301f,#065f46);color:#d7fff1;font-size:1.06rem;
+  font-weight:700;line-height:1.7;box-shadow:0 6px 18px rgba(6,95,70,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600;white-space:nowrap}
+td{padding:11px 15px;border-bottom:1px solid #e8edf3;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f6f9fd}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+code{font-family:'Consolas','SFMono-Regular',monospace;font-size:.88em;background:#eef3f9;
+  color:#1e40af;padding:1px 6px;border-radius:4px}
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;
+  background:linear-gradient(135deg,#0b2340,#16406f);color:#e8f2ff;box-shadow:0 8px 24px rgba(11,35,64,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#dceaff}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#8ff0d0}
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;background:#fcfdfe;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;color:var(--navy);
+  background:#f2f6fb;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+details.notes strong{color:var(--navy)}
+.qa{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-top:28px;
+  padding:26px 32px 30px;box-shadow:0 4px 18px rgba(15,43,78,.07)}
+.qa h2{margin-top:0}
+.qa-item{border-left:3px solid var(--blue100);padding:2px 0 2px 16px;margin-bottom:18px}
+.qa-item .q{font-weight:700;color:var(--navy);font-size:.96rem}
+.qa-item .a{font-size:.93rem;color:var(--ink2);margin-top:4px}
+.qa-item .a::before{content:'→ ';color:var(--accent-d);font-weight:700}
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--blue700);background:var(--blue100);
+  border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+@media (max-width:640px){
+  .hero{padding:28px 22px 24px}.hero h1{font-size:1.4rem}
+  .slide-body{padding:22px 18px 26px}.msg{font-size:1.05rem;padding:18px 18px 18px 52px}
+}
+@media print{body{background:#fff}.wrap{margin:0;max-width:none}
+  .slide,.hero,.qa{box-shadow:none;break-inside:avoid}details.notes{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.04 ／ トークン</div>
+      <h1>トークンという単位<br>―「日本語は高い」の理由</h1>
+      <p class="sub">課金も、上限も、実は「文字数」では数えていません。</p>
+      <div class="badges">
+        <span class="badge">🔧 仕組み</span>
+        <span class="badge">⏱ 5分（スライド2枚）</span>
+        <span class="badge">📍 CD実行待ち（小話02の後がつながりやすい）</span>
+        <span class="badge hl">優先度 ★★☆</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 320 200" role="img" aria-label="文章がトークンという断片に切り刻まれるイラスト">
+        <!-- 元の文章 -->
+        <rect x="14" y="60" width="104" height="76" rx="10" fill="#fff" opacity=".95"/>
+        <g fill="#9ecbff">
+          <rect x="28" y="76" width="76" height="7" rx="3.5"/>
+          <rect x="28" y="92" width="60" height="7" rx="3.5"/>
+          <rect x="28" y="108" width="70" height="7" rx="3.5"/>
+        </g>
+        <text x="66" y="152" font-size="12" fill="#c9e2ff" text-anchor="middle">文章</text>
+        <!-- 刃 -->
+        <path d="M132 70 L146 128" stroke="#06d6a0" stroke-width="4" stroke-linecap="round"/>
+        <path d="M146 70 L132 128" stroke="#06d6a0" stroke-width="4" stroke-linecap="round"/>
+        <text x="139" y="152" font-size="11" fill="#8ff0d0" text-anchor="middle">分割</text>
+        <!-- トークン -->
+        <g>
+          <rect x="176" y="52" width="52" height="26" rx="7" fill="#7fe8c8"/>
+          <rect x="236" y="52" width="42" height="26" rx="7" fill="#9ecbff"/>
+          <rect x="176" y="86" width="38" height="26" rx="7" fill="#f7c873"/>
+          <rect x="222" y="86" width="58" height="26" rx="7" fill="#8b8bf0"/>
+          <rect x="176" y="120" width="48" height="26" rx="7" fill="#9ecbff"/>
+          <rect x="232" y="120" width="36" height="26" rx="7" fill="#7fe8c8"/>
+        </g>
+        <text x="228" y="170" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">トークン</text>
+        <text x="228" y="188" font-size="11" fill="#8ff0d0" text-anchor="middle">課金も上限もこの数</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- SLIDE 1 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> トークンとは何か</div>
+  <div class="slide-body">
+
+    <div class="msg">AIは、文字でも単語でもなく<br>「トークン」で世界を見ている</div>
+
+    <h2>掴み ── 課金も、上限も、実は「文字数」で数えていない</h2>
+
+    <h3>トークン＝単語より少し細かい断片</h3>
+    <figure>
+      <div class="tokrow">
+        <span class="lang en">英語</span>
+        <span class="src">"unbelievable"</span><span class="arw">─►</span>
+        <span class="chips"><span class="chip">un</span><span class="chip">believ</span><span class="chip">able</span></span>
+        <span class="cnt">3トークン</span>
+      </div>
+      <div class="tokrow">
+        <span class="lang en">英語</span>
+        <span class="src">"Hello, world!"</span><span class="arw">─►</span>
+        <span class="chips"><span class="chip">Hello</span><span class="chip">,</span><span class="chip">&nbsp;world</span><span class="chip">!</span></span>
+        <span class="cnt">4トークン</span>
+      </div>
+      <div class="tokrow">
+        <span class="lang ja">日本語</span>
+        <span class="src">「書籍管理画面」</span><span class="arw">─►</span>
+        <span class="chips"><span class="chip j">書籍</span><span class="chip j">管理</span><span class="chip j">画</span><span class="chip j">面</span></span>
+        <span class="cnt">4トークン</span>
+      </div>
+      <div class="tokrow" style="margin-bottom:0">
+        <span class="lang ja">日本語</span>
+        <span class="src">「ヴァリデーション」</span><span class="arw">─►</span>
+        <span class="chips"><span class="chip j">ヴ</span><span class="chip j">ァ</span><span class="chip j">リ</span><span class="chip j">デ</span><span class="chip j">ー</span><span class="chip j">シ</span><span class="chip j">ョ</span><span class="chip j">ン</span></span>
+        <span class="cnt hot">8トークン</span>
+      </div>
+      <figcaption>珍しい語ほど細かく刻まれる ─ カタカナ語は1文字ずつになりやすい</figcaption>
+    </figure>
+    <p class="note">※ 分割のされ方はモデルごとに違います。あくまで「そういう単位で数えている」という理解が目的です。</p>
+
+    <h2>同じ内容でも、言語でこれだけ差が出る</h2>
+    <figure>
+      <svg viewBox="0 0 720 200" role="img" aria-label="同じ内容でも英語約130トークン、日本語約300から400トークンになる比較グラフ">
+        <text x="14" y="30" font-size="13" font-weight="700" fill="#0f2b4e">同じ内容を書いたときのトークン数</text>
+        <!-- 英語 -->
+        <text x="14" y="72" font-size="13" font-weight="700" fill="#1e40af">英語（100語程度）</text>
+        <rect x="186" y="54" width="150" height="26" rx="6" fill="#3584e4"/>
+        <text x="348" y="73" font-size="13" font-weight="700" fill="#1e40af">約 130 トークン</text>
+        <!-- 日本語 -->
+        <text x="14" y="124" font-size="13" font-weight="700" fill="#b45309">日本語（同じ内容）</text>
+        <rect x="186" y="106" width="404" height="26" rx="6" fill="#ef8354"/>
+        <text x="602" y="125" font-size="13" font-weight="700" fill="#b45309">約 300〜400</text>
+        <!-- 差分ブラケット（英語より余分に食う分） -->
+        <path d="M336 140 V150 H590 V140" fill="none" stroke="#b4232a" stroke-width="2"/>
+        <text x="463" y="176" font-size="13" font-weight="700" fill="#b4232a" text-anchor="middle">同じことを言うのに 2〜3倍</text>
+      </svg>
+      <figcaption>日本語は 1文字で 1〜2トークン食うことも珍しくない</figcaption>
+    </figure>
+
+    <blockquote>
+      「日本語は高い・上限に早く当たる」の正体はこれ。<strong>腕の問題ではなく、仕組みの問題</strong>です。
+    </blockquote>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>AIは文章をそのまま読んでいるのではなく、まず<strong>トークンという断片に切り刻んで</strong>から扱っています</li>
+          <li>そして料金も、コンテキストの上限も、全部この<strong>トークン数</strong>で数えられています。文字数ではありません</li>
+          <li>日本語は不利です。同じことを書いても、英語の2〜3倍のトークンを使う。これは腕の問題ではなく仕組みの問題です</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> コストと精度への効き方</div>
+  <div class="slide-body">
+
+    <div class="msg">「書いた量」が<br>そのままコストと精度に効いてくる</div>
+
+    <h2>桁感を持つ ── 今日のハンズオンのざっくり感覚</h2>
+    <figure>
+      <div class="scale">
+        <div class="sc"><span class="lbl">設計書1本を読ませる</span><span class="bar" style="width:8%"></span><span class="v">数千 〜 1万トークン</span></div>
+        <div class="sc"><span class="lbl">生成されたコード1ファイル</span><span class="bar" style="width:4%"></span><span class="v">千 〜 数千トークン</span></div>
+        <div class="sc"><span class="lbl">CDで1画面ぶんを作らせる</span><span class="bar" style="width:26%"></span><span class="v">数万トークン（往復ぜんぶ込み）</span></div>
+        <div class="sc"><span class="lbl">一日ハンズオンを回す</span><span class="bar" style="width:58%"></span><span class="v">数十万〜 トークン</span></div>
+      </div>
+      <figcaption>正確な値はツールの表示で確認できる。ここでは<strong>桁の感覚</strong>を持つことが目的</figcaption>
+    </figure>
+
+    <h2>トークンは3か所に効いてくる</h2>
+    <div class="cards">
+      <div class="card">
+        <span class="big">💰</span><div class="t">コスト</div>
+        <div class="d">入力も出力も課金対象。<strong>毎ターン全部再送</strong>なので、長い会話ほど二乗的に効く<span class="xref">→ 小話01</span></div>
+      </div>
+      <div class="card">
+        <span class="big">📦</span><div class="t">上限</div>
+        <div class="d">コンテキストウィンドウを食いつぶす<span class="xref">→ 小話02</span></div>
+      </div>
+      <div class="card">
+        <span class="big">🎯</span><div class="t">精度</div>
+        <div class="d">情報が多いほど、肝心の指示が埋もれて薄まる</div>
+      </div>
+    </div>
+
+    <h2>だから、こう書く</h2>
+    <div class="cmp">
+      <div class="bad">
+        <span class="h">❌ 高くつく書き方</span>
+        <ul>
+          <li>前置き・経緯・感想を長々と書く</li>
+          <li>使わないファイルまで「念のため」読ませる</li>
+          <li>1つのセッションを一日引っぱる</li>
+        </ul>
+      </div>
+      <div class="good">
+        <span class="h">✅ 安くて精度も上がる書き方</span>
+        <ul>
+          <li>必要な設計書を、必要な分だけ渡す</li>
+          <li>冗長な設計書はAIにとっても読みにくい（＝人間と同じ）</li>
+          <li>区切る。終わったら新しいセッションへ</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="hilite">
+      💡 「たくさん渡せば賢くなる」は誤り
+      <small>必要なものを、必要なだけ（→ 小話09 RAG）</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">✅</span><strong>課金も上限もトークン数</strong>。文字数ではない。日本語は割高だと知っておく</li>
+        <li><span class="ic">✅</span>長い会話は、<strong>毎ターン全部を再送している</strong>ぶん想像よりずっと高い</li>
+        <li><span class="ic">✅</span><strong>簡潔で構造化された設計書は、コストにも精度にも効く</strong>。冗長さは二重に損</li>
+        <li><span class="ic">💡</span>「たくさん渡せば賢くなる」は誤り。<strong>必要なものを、必要なだけ</strong></li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>実務でいちばん効くのは「長い会話が高い」という感覚です。10往復目のやり取りは、1往復目の10倍近い量を毎回送っています</li>
+          <li>そして意外と見落とされるのが<strong>設計書の書き方</strong>です。冗長な設計書は、コストも食うし、AIにとっても読みにくい。<strong>人間が読みやすい設計書は、AIにとっても読みやすい</strong>んです</li>
+          <li>なので「AI用に特別な書き方をする」必要はありません。<strong>簡潔に、構造的に</strong>。それだけで両方に効きます</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<section class="qa">
+  <h2>補足（質問が出たら）</h2>
+  <div class="qa-item">
+    <div class="q">Q. コードは日本語より安い？</div>
+    <div class="a">英数字中心なので比較的効率は良い。ただしインデントや記号も1トークンを食う。</div>
+  </div>
+  <div class="qa-item">
+    <div class="q">Q. トークン数はどこで見られる？</div>
+    <div class="a">多くのツールが使用量を表示する。研修中の画面でも確認できる。</div>
+  </div>
+</section>
+
+<footer>AI小話 No.04 ／ トークンという単位 ｜ 🔧 仕組み ｜ 5分</footer>
+
+</div>
+</body>
+</html>

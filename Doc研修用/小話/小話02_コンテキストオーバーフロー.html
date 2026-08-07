@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話02 ｜ Contextサイズオーバーフローとの闘い</title>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#eaeff6; --card:#ffffff; --line:#dfe6ef;
+  --navy:#0f2b4e; --blue:#1a5fb4; --blue-l:#3584e4;
+  --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --accent:#06d6a0; --accent-d:#059669; --accent50:#e7fbf4;
+  --amber:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea; --red700:#b4232a;
+  --r:14px;
+  --theme:var(--blue); --theme-d:var(--navy); --theme50:var(--blue50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px; line-height:1.85; color:var(--ink); background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%, #dce7f7 0%, transparent 45%),
+                   radial-gradient(circle at 100% 0%, #fdeede 0%, transparent 40%);
+  background-attachment:fixed; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+
+/* ============ HERO ============ */
+.hero{background:linear-gradient(135deg,#0b2340 0%,#134c8f 55%,#2a7bd6 100%);
+  color:#fff;border-radius:20px;padding:40px 40px 34px;position:relative;overflow:hidden;
+  box-shadow:0 18px 44px rgba(11,35,64,.28)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,var(--amber),#ef8354,var(--amber))}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 330px;min-width:260px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#9ecbff;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.95rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#c9e2ff}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
+  padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.28);color:#eaf4ff}
+.badge.hl{background:var(--amber);border-color:transparent;color:#402400}
+
+/* ============ SLIDE ============ */
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;
+  box-shadow:0 6px 26px rgba(15,43,78,.10);overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;
+  font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+
+.msg{position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);border:1.5px solid var(--blue100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy)}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;
+  color:var(--theme);opacity:.35;font-family:Georgia,serif}
+
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;
+  padding-left:13px;border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:#1e4a8a;margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+
+figure{margin:20px 0 24px;background:#f7fafd;border:1px solid var(--line);border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* あるあるカード */
+.symptoms{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:18px 0 24px}
+.sym{background:var(--red50);border:1px solid #f6c9cb;border-left:5px solid var(--red);
+  border-radius:10px;padding:14px 16px;font-size:.92rem;color:#7d1a1e;line-height:1.65}
+.sym .ic{display:block;font-size:1.5rem;margin-bottom:4px}
+
+/* 3現象カード */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0 24px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;
+  box-shadow:0 2px 8px rgba(15,43,78,.06);text-align:center}
+.card .big{font-size:2rem;line-height:1;display:block;margin-bottom:8px}
+.card .t{font-weight:700;color:var(--navy);font-size:1rem;margin-bottom:6px}
+.card .d{font-size:.88rem;color:var(--ink2);line-height:1.7;text-align:left}
+
+/* 対策ブロック */
+.tac{border:1px solid var(--line);border-radius:12px;margin:18px 0 24px;overflow:hidden;background:#fff}
+.tac-h{padding:12px 20px;font-weight:700;font-size:1rem;color:#fff;display:flex;align-items:center;gap:10px}
+.tac-h .n{background:rgba(255,255,255,.22);border-radius:6px;padding:1px 9px;font-size:12px;letter-spacing:.05em}
+.tac1 .tac-h{background:linear-gradient(90deg,#0f2b4e,#1a5fb4)}
+.tac2 .tac-h{background:linear-gradient(90deg,#04452f,#059669)}
+.tac3 .tac-h{background:linear-gradient(90deg,#7a3d05,#d97706)}
+.tac-b{padding:18px 22px}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cmp>div{border-radius:10px;padding:14px 16px;font-size:.9rem;line-height:1.7}
+.cmp .bad{background:var(--red50);border:1px solid #f6c9cb;color:#7d1a1e}
+.cmp .good{background:var(--accent50);border:1px solid #a9e8d3;color:#04452f}
+.cmp .h{font-weight:700;display:block;margin-bottom:6px;font-size:.95rem}
+.cmp code{font-family:'Consolas',monospace;font-size:.85rem;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:4px}
+@media (max-width:640px){.cmp{grid-template-columns:1fr}}
+
+/* 警告リスト */
+.alert{background:var(--amber50);border:1px solid #f4d79a;border-left:5px solid var(--amber);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:20px 0}
+.alert .h{font-weight:700;color:var(--amber700);margin-bottom:8px;font-size:.98rem}
+.alert ul{list-style:none}
+.alert li{position:relative;padding-left:20px;margin-bottom:6px;font-size:.92rem;color:#7a4a08}
+.alert li::before{content:'▸';position:absolute;left:2px;color:var(--amber);font-weight:700}
+
+blockquote{margin:20px 0;padding:16px 22px;background:var(--blue50);border-left:5px solid var(--theme);
+  border-radius:0 10px 10px 0;color:#1e4a8a;font-size:.95rem}
+blockquote strong{color:var(--navy)}
+blockquote.warn{background:var(--amber50);border-left-color:var(--amber);color:#7a4a08}
+blockquote.warn strong{color:var(--amber700)}
+
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#04301f,#065f46);color:#d7fff1;
+  font-size:1.08rem;font-weight:700;line-height:1.7;box-shadow:0 6px 18px rgba(6,95,70,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600;white-space:nowrap}
+td{padding:11px 15px;border-bottom:1px solid #e8edf3;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f6f9fd}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+code{font-family:'Consolas','SFMono-Regular',monospace;font-size:.88em;
+  background:#eef3f9;color:#1e40af;padding:1px 6px;border-radius:4px}
+
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;
+  background:linear-gradient(135deg,#0b2340,#16406f);color:#e8f2ff;box-shadow:0 8px 24px rgba(11,35,64,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem;display:flex;align-items:center;gap:9px}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#dceaff}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#8ff0d0}
+
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;background:#fcfdfe;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;color:var(--navy);
+  background:#f2f6fb;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+details.notes strong{color:var(--navy)}
+
+.qa{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-top:28px;
+  padding:26px 32px 30px;box-shadow:0 4px 18px rgba(15,43,78,.07)}
+.qa h2{margin-top:0}
+.qa-item{border-left:3px solid var(--blue100);padding:2px 0 2px 16px;margin-bottom:18px}
+.qa-item .q{font-weight:700;color:var(--navy);font-size:.96rem}
+.qa-item .a{font-size:.93rem;color:var(--ink2);margin-top:4px}
+.qa-item .a::before{content:'→ ';color:var(--accent-d);font-weight:700}
+
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--blue700);
+  background:var(--blue100);border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+
+@media (max-width:640px){
+  .hero{padding:28px 22px 24px}.hero h1{font-size:1.42rem}
+  .slide-body{padding:22px 18px 26px}.msg{font-size:1.05rem;padding:18px 18px 18px 52px}
+}
+@media print{
+  body{background:#fff}.wrap{margin:0;max-width:none}
+  .slide,.hero,.qa{box-shadow:none;break-inside:avoid}
+  details.notes{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.02 ／ コンテキストウィンドウ</div>
+      <h1>Contextサイズ<br>オーバーフローとの闘い</h1>
+      <p class="sub">「急にAIが馬鹿になった」は気のせいではなく、構造上そうなります。</p>
+      <div class="badges">
+        <span class="badge">🔧 仕組み</span>
+        <span class="badge">⏱ 7分（スライド2枚）</span>
+        <span class="badge">📍 CD実行待ち（2回目以降）／小話01・03の直後</span>
+        <span class="badge hl">優先度 ★★★</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 340 210" role="img" aria-label="上限のある箱から情報があふれ出しているイラスト">
+        <defs>
+          <linearGradient id="bx" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3584e4"/><stop offset="1" stop-color="#0f2b4e"/>
+          </linearGradient>
+        </defs>
+        <!-- あふれた紙 -->
+        <g opacity=".95">
+          <rect x="34" y="26" width="34" height="24" rx="4" fill="#f7c873" transform="rotate(-22 51 38)"/>
+          <rect x="252" y="18" width="34" height="24" rx="4" fill="#ef8354" transform="rotate(18 269 30)"/>
+          <rect x="146" y="8" width="34" height="24" rx="4" fill="#fde9c8" transform="rotate(-6 163 20)"/>
+          <rect x="86" y="44" width="30" height="21" rx="4" fill="#ef8354" opacity=".8" transform="rotate(12 101 54)"/>
+          <rect x="212" y="46" width="30" height="21" rx="4" fill="#f7c873" opacity=".8" transform="rotate(-14 227 56)"/>
+        </g>
+        <!-- 箱 -->
+        <rect x="62" y="78" width="216" height="104" rx="12" fill="url(#bx)"/>
+        <rect x="62" y="78" width="216" height="104" rx="12" fill="none" stroke="#9ecbff" stroke-width="2.5"/>
+        <!-- 中身（詰まっている） -->
+        <g>
+          <rect x="76" y="94" width="188" height="14" rx="4" fill="#9ecbff" opacity=".9"/>
+          <rect x="76" y="114" width="188" height="14" rx="4" fill="#7fe8c8" opacity=".9"/>
+          <rect x="76" y="134" width="188" height="14" rx="4" fill="#f7c873" opacity=".95"/>
+          <rect x="76" y="154" width="188" height="14" rx="4" fill="#ef8354" opacity=".95"/>
+        </g>
+        <text x="170" y="200" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">コンテキストウィンドウ ＝ 物理的な上限</text>
+        <!-- 満杯アイコン -->
+        <circle cx="290" cy="88" r="20" fill="#e5484d"/>
+        <text x="290" y="94" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">!</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- ================= SLIDE 1 ================= -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> あるある ＋ 原因</div>
+  <div class="slide-body">
+
+    <div class="msg">「急にAIが馬鹿になった」には、<br>物理的な理由がある</div>
+
+    <h2>あるある ── 長く使っていると、こうなる</h2>
+    <div class="symptoms">
+      <div class="sym"><span class="ic">📄</span>さっき渡したはずの<strong>設計書の内容を、平然と無視</strong>しはじめる</div>
+      <div class="sym"><span class="ic">🔀</span>「〇〇のルールで」と言ったのに、<strong>序盤と違う書き方</strong>をしはじめる</div>
+      <div class="sym"><span class="ic">⏹</span>途中で<strong>作業が止まる</strong>／勝手に省略する</div>
+    </div>
+
+    <h2>原因 ── 入れ物には、物理的な上限がある</h2>
+    <figure>
+      <svg viewBox="0 0 720 330" role="img" aria-label="コンテキストウィンドウの上限。会話ログが伸びると古い情報が押し出される様子">
+        <!-- 上段：まだ余裕がある -->
+        <text x="14" y="20" font-size="13" font-weight="700" fill="#0f2b4e">序盤：全部きれいに入っている</text>
+        <rect x="14" y="30" width="692" height="58" rx="10" fill="#fbfdff" stroke="#1a5fb4" stroke-width="2.5"/>
+        <rect x="24" y="40" width="128" height="38" rx="6" fill="#c3d4ee"/>
+        <text x="88" y="64" font-size="12" font-weight="700" fill="#0f2b4e" text-anchor="middle">①システム</text>
+        <rect x="158" y="40" width="96" height="38" rx="6" fill="#b7e0d0"/>
+        <text x="206" y="64" font-size="12" font-weight="700" fill="#04452f" text-anchor="middle">②ルール</text>
+        <rect x="260" y="40" width="140" height="38" rx="6" fill="#ccd2ef"/>
+        <text x="330" y="64" font-size="12" font-weight="700" fill="#2c2c7a" text-anchor="middle">③設計書</text>
+        <rect x="406" y="40" width="150" height="38" rx="6" fill="#f7c873"/>
+        <text x="481" y="64" font-size="12" font-weight="700" fill="#7a3d05" text-anchor="middle">④会話ログ</text>
+        <rect x="562" y="40" width="134" height="38" rx="6" fill="#eef2f7" stroke="#d3dce7" stroke-dasharray="4 4"/>
+        <text x="629" y="64" font-size="11.5" fill="#8494a8" text-anchor="middle">空き</text>
+        <text x="629" y="104" font-size="12" font-weight="700" fill="#b45309" text-anchor="middle">会話が伸びる ▶</text>
+
+        <!-- 下段：あふれた -->
+        <text x="14" y="150" font-size="13" font-weight="700" fill="#b4232a">終盤：会話ログが占領し、古い前提が押し出される</text>
+        <rect x="14" y="160" width="692" height="58" rx="10" fill="#fbfdff" stroke="#e5484d" stroke-width="2.5"/>
+        <rect x="24" y="170" width="76" height="38" rx="6" fill="#b7e0d0"/>
+        <text x="62" y="194" font-size="11.5" font-weight="700" fill="#04452f" text-anchor="middle">②ルール</text>
+        <rect x="106" y="170" width="92" height="38" rx="6" fill="#ccd2ef"/>
+        <text x="152" y="194" font-size="11.5" font-weight="700" fill="#2c2c7a" text-anchor="middle">③設計書</text>
+        <rect x="204" y="170" width="492" height="38" rx="6" fill="#ef8354"/>
+        <text x="450" y="194" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">④会話ログ ███████████████████</text>
+
+        <!-- 押し出された①（枠の外へこぼれ落ちる） -->
+        <path d="M52 214 Q44 232 40 246" fill="none" stroke="#e5484d" stroke-width="2.5" stroke-dasharray="6 5"/>
+        <path d="M33 238 L38 252 L47 241 Z" fill="#e5484d"/>
+        <g opacity=".55" transform="rotate(-10 76 268)">
+          <rect x="20" y="250" width="112" height="34" rx="6" fill="#c3d4ee" stroke="#94a7c2" stroke-width="1.5" stroke-dasharray="5 4"/>
+          <text x="76" y="272" font-size="11.5" font-weight="700" fill="#5b6c82" text-anchor="middle">①システム</text>
+        </g>
+        <text x="152" y="252" font-size="13" font-weight="700" fill="#b4232a">溢れると、古いほうから押し出される／要約されて潰れる</text>
+        <text x="152" y="274" font-size="12.5" fill="#7d1a1e">＝ 序盤に渡した「一番大事な前提」から先に失われる</text>
+
+        <!-- 注釈 -->
+        <rect x="14" y="292" width="692" height="34" rx="8" fill="#fff8e6" stroke="#f4d79a"/>
+        <text x="30" y="314" font-size="12.5" fill="#7a4a08">⚠ しかもAIは「忘れました」と言わない。忘れたことに気づかないまま、それらしく続きを書く（→ 小話05）</text>
+      </svg>
+      <figcaption>上限は決まっている。増え続けるのは④だけなので、押し出されるのは①②③（＝前提）の側</figcaption>
+    </figure>
+
+    <h2>入るのに、効かなくなることもある</h2>
+    <div class="cards">
+      <div class="card">
+        <span class="big">🚪</span>
+        <div class="t">押し出し</div>
+        <div class="d">上限を超え、古いやり取りが落ちる・要約に置き換わる</div>
+      </div>
+      <div class="card">
+        <span class="big">🌫</span>
+        <div class="t">薄まる</div>
+        <div class="d">入ってはいるが、大量の情報の中で埋もれ、重みが下がる</div>
+      </div>
+      <div class="card">
+        <span class="big">🐢</span>
+        <div class="t">重くなる</div>
+        <div class="d">毎ターン全部読み直すので、長いほど遅く・高くなる</div>
+      </div>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>「AIが急に馬鹿になった」は、感覚ではなく<strong>構造上そうなります</strong>。入れ物のサイズが決まっているからです</li>
+          <li>そして厄介なのが、<strong>溢れると古い方から消える</strong>ということ。序盤に渡した設計書やルール、つまり一番大事な前提が最初に失われます</li>
+          <li>しかもAIは「忘れました」と言ってくれません。<strong>忘れたことに気づかないまま、それらしく続きを書きます</strong><span class="xref">→ 小話05</span></li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- ================= SLIDE 2 ================= -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> 対策 ＋ 持ち帰り</div>
+  <div class="slide-body">
+
+    <div class="msg">闘い方は3つ。<br>「切る」「置く」「渡し直す」</div>
+
+    <!-- 対策1 -->
+    <div class="tac tac1">
+      <div class="tac-h"><span class="n">対策 1</span>🛡 切る ── 長い1本より、短い複数本</div>
+      <div class="tac-b">
+        <div class="cmp">
+          <div class="bad">
+            <span class="h">❌ 1セッションで全部やる</span>
+            CD → UT → 機能追加 を1本で通す<br>
+            <span style="opacity:.85">└ 終盤には序盤の前提が残っていない</span>
+          </div>
+          <div class="good">
+            <span class="h">✅ 機能単位・工程単位で区切る</span>
+            CDで1本／UTで1本／機能追加で1本<br>
+            <span style="opacity:.85">└ 各セッションが「必要な情報だけ」で満たされる</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 対策2 -->
+    <div class="tac tac2">
+      <div class="tac-h"><span class="n">対策 2</span>🛡 置く ── 記憶はファイルに持たせる</div>
+      <div class="tac-b">
+        <div class="tw" style="margin:0">
+          <table>
+            <thead><tr><th style="width:50%">会話に溜める（❌）</th><th>ファイルに置く（✅）</th></tr></thead>
+            <tbody>
+              <tr><td>「さっき言った命名規則で」</td><td><code>モジュール一覧.md</code> を読ませる</td></tr>
+              <tr><td>「前に直したあの書き方で」</td><td><code>CD_ルール.md</code> に書いておく</td></tr>
+              <tr><td>「仕様はこう決めたよね」</td><td>外部設計書を更新しておく</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <blockquote style="margin-bottom:0">会話は<strong>揮発する</strong>。ファイルは<strong>次のセッションでも効く</strong></blockquote>
+      </div>
+    </div>
+
+    <!-- 対策3 -->
+    <div class="tac tac3">
+      <div class="tac-h"><span class="n">対策 3</span>🛡 渡し直す ── 大事な前提は、要所で再提示する</div>
+      <div class="tac-b">
+        <ul class="dots" style="margin:0">
+          <li>長いやり取りの後で重要な作業に入るときは、<strong>設計書のパスをもう一度書く</strong></li>
+          <li>「①どこを見るか」を毎回添えるだけで、押し出しの影響をかなり潰せる<span class="xref">→ 小話13</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="alert">
+      <div class="h">🚨 溢れかけのサイン</div>
+      <ul>
+        <li>序盤に指示したルールと違う書き方が出てきた</li>
+        <li>「（要約しました）」「コンテキストを圧縮しています」の表示が出た</li>
+        <li>同じ質問を繰り返してくる／既に読んだファイルをまた読み直している</li>
+      </ul>
+    </div>
+
+    <h2>👀 そして今は「勘」ではなく、数字で見えます</h2>
+    <p>主要なAIツールには、<strong>今どれだけ入れ物を使っているかを表示する機能</strong>が用意されています。</p>
+
+    <figure>
+      <svg viewBox="0 0 720 200" role="img" aria-label="コンテキスト使用率を示すリング型インジケーターのイメージ">
+        <defs>
+          <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#06d6a0"/><stop offset="1" stop-color="#f59e0b"/>
+          </linearGradient>
+        </defs>
+        <!-- チャット入力欄のモック -->
+        <rect x="14" y="40" width="420" height="120" rx="12" fill="#fff" stroke="#dfe6ef" stroke-width="2"/>
+        <text x="34" y="70" font-size="12.5" fill="#8494a8">AIへの指示を入力…</text>
+        <rect x="34" y="118" width="80" height="24" rx="6" fill="#eef3f9"/>
+        <text x="74" y="135" font-size="11.5" fill="#5b6c82" text-anchor="middle">📎 添付</text>
+        <rect x="352" y="112" width="66" height="30" rx="8" fill="#1a5fb4"/>
+        <text x="385" y="132" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">送信</text>
+        <!-- リングアイコン -->
+        <circle cx="398" cy="66" r="17" fill="none" stroke="#e3e9f1" stroke-width="6"/>
+        <circle cx="398" cy="66" r="17" fill="none" stroke="url(#ring)" stroke-width="6"
+                stroke-dasharray="80 107" stroke-linecap="round" transform="rotate(-90 398 66)"/>
+        <text x="398" y="71" font-size="10.5" font-weight="700" fill="#0f2b4e" text-anchor="middle">75%</text>
+        <path d="M398 92 V112" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="398" y="30" font-size="12" font-weight="700" fill="#b45309" text-anchor="middle">← 入力欄の右上</text>
+
+        <!-- 内訳パネル -->
+        <rect x="462" y="30" width="244" height="140" rx="12" fill="#0f2b4e"/>
+        <text x="482" y="56" font-size="12.5" font-weight="700" fill="#fff">コンテキスト内訳</text>
+        <g font-size="11.5" fill="#c9e2ff">
+          <rect x="482" y="68" width="120" height="10" rx="5" fill="#9ecbff"/><text x="616" y="78">会話 42%</text>
+          <rect x="482" y="88" width="70" height="10" rx="5" fill="#7fe8c8"/><text x="616" y="98">設計書 21%</text>
+          <rect x="482" y="108" width="34" height="10" rx="5" fill="#f7c873"/><text x="616" y="118">ルール 8%</text>
+          <rect x="482" y="128" width="14" height="10" rx="5" fill="#ef8354"/><text x="616" y="138">その他 4%</text>
+        </g>
+        <text x="482" y="160" font-size="11.5" fill="#8ff0d0">残り 25% ／ 自動圧縮まであとわずか</text>
+      </svg>
+      <figcaption>「何％使っているか」だけでなく「何が場所を食っているか」まで見える</figcaption>
+    </figure>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:34%">ツール</th><th>見かた</th></tr></thead>
+        <tbody>
+          <tr><td><strong>GitHub Copilot（VS Code）</strong></td><td>チャット入力欄の<strong>右上のリング型アイコン</strong>。クリックすると使用率（％）と、会話・ファイルなど<strong>何がどれだけ占めているかの内訳</strong>が出る</td></tr>
+          <tr><td><strong>Claude Code</strong></td><td><code>/context</code> コマンドで内訳を表示。自動圧縮までの残量も出る</td></tr>
+          <tr><td>その他のCLI系ツール</td><td>画面下部に「context left ○％」のような残量表示があるものが多い</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <blockquote class="warn">⚠ 上限そのものは<strong>モデルの性能ではなくツール側が決めている</strong>ことに注意。同じモデルでも、使うツールによって入る量は違います</blockquote>
+
+    <h3>使い方は簡単で、「重い作業に入る前に一度見る」だけ</h3>
+    <ul class="dots">
+      <li><strong>8割を超えていたら</strong>、新しいセッションを開いてから始める</li>
+      <li>「何が場所を食っているか」が分かるので、<strong>無駄に読ませたファイル</strong>にも気づける</li>
+      <li>Copilotなら「Summarize conversation」／<code>/compact</code> で手動圧縮もできる（ただし細部は落ちる → 補足参照）</li>
+    </ul>
+
+    <div class="hilite">
+      🛡 溜めない・置く・渡し直す
+      <small>この3つだけ覚えて帰る</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">✅</span><strong>上限は物理制約</strong>。気合や言い方では回避できない</li>
+        <li><span class="ic">✅</span><strong>セッションは消耗品</strong>。長く使うほど品質が落ちる。こまめに切るのが正しい使い方</li>
+        <li><span class="ic">✅</span><strong>設計書＝AIの外部記憶</strong>。今日のspec駆動は、この制約への対策そのもの<span class="xref">→ 小話10</span></li>
+        <li><span class="ic">✅</span><strong>残量は見える</strong>。勘に頼らず、重い作業の前にインジケーターを一度確認する</li>
+        <li><span class="ic">⚠</span>ループが長引くほど経緯が膨らむ<span class="xref">→ 小話03</span>。<strong>大きな依頼を1発で投げないこと</strong>が最大の予防策</li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>対策はシンプルです。<strong>溜めない・置く・渡し直す</strong>。この3つだけ覚えて帰ってください</li>
+          <li>そして今は、<strong>残量を数字で見られます</strong>。Copilotならチャット入力欄の右上に小さなリングがあるので、その場で一度クリックしてみてください。「今何％使っているか」「何が場所を食っているか」が出ます</li>
+          <li>「なんとなく調子が悪い」を待つのではなく、<strong>重い作業の前に一度見る</strong>。これだけで切るタイミングを外さなくなります</li>
+          <li>特に効くのが「切る」です。もったいない気がして1本を引っぱりがちですが、<strong>新しく開いた方が速くて安くて正確</strong>なことがほとんどです</li>
+          <li>そして今日の研修の構成そのものが、この対策になっています。工程ごとに分けて、設計書という外部記憶を持たせて、必要なところだけ読ませている。<strong>これは丁寧にやっているのではなく、そうしないと動かないからです</strong></li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- ================= Q&A ================= -->
+<section class="qa">
+  <h2>補足（質問が出たら）</h2>
+  <div class="qa-item">
+    <div class="q">Q. 上限を増やせばいい？</div>
+    <div class="a">増えてはいるが、入れるほど「薄まる」「遅い」「高い」が効いてくる。入れないのが最善。</div>
+  </div>
+  <div class="qa-item">
+    <div class="q">Q. 圧縮（compact）されたらどうなる？</div>
+    <div class="a">要約に置き換わるので、細部（正確なパス・数値・命名）は落ちやすい。圧縮後は前提を渡し直すのが安全。</div>
+  </div>
+  <div class="qa-item">
+    <div class="q">Q. インジケーターが出ていない／見当たらない</div>
+    <div class="a">VS Code・拡張機能のバージョンで表示が変わることがある。まずアップデートを確認する。無い場合も、対策1〜3（切る・置く・渡し直す）は変わらず有効。</div>
+  </div>
+  <div class="qa-item">
+    <div class="q">Q. 最初から数十％使っているのはなぜ？</div>
+    <div class="a">システムプロンプトやツール定義、応答用に確保された枠が最初から入っているため。<strong>ゼロから始まるわけではない</strong>のが普通。</div>
+  </div>
+</section>
+
+<footer>AI小話 No.02 ／ Contextサイズオーバーフローとの闘い ｜ 🔧 仕組み ｜ 7分</footer>
+
+</div>
+</body>
+</html>

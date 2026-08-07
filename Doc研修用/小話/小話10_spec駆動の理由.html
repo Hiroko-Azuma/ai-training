@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話10 ｜ なぜ「設計書を渡す」と精度が跳ね上がるのか</title>
+<style>
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#e9f2ee; --card:#fff; --line:#dde7e2;
+  --navy:#05412c; --green:#059669; --green50:#effaf5; --green100:#d5f5e8; --green700:#04704e;
+  --blue:#1a5fb4; --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --accent:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea;
+  --r:14px; --theme:var(--green); --theme-d:var(--navy); --theme50:var(--green50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px;line-height:1.85;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%,#d8efe4 0%,transparent 45%),
+                   radial-gradient(circle at 100% 0%,#dce7f7 0%,transparent 40%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+.hero{background:linear-gradient(135deg,#03291a 0%,#0b6b4f 55%,#12a37a 100%);color:#fff;border-radius:20px;
+  padding:40px 40px 34px;position:relative;overflow:hidden;box-shadow:0 18px 44px rgba(3,41,26,.28)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,#f7c873,#4cc9f0,#f7c873)}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 320px;min-width:250px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#8ff0d0;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.85rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#bdf0dd}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 12px;
+  border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#e6fff6}
+.badge.hl{background:#f7c873;border-color:transparent;color:#402400}
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;box-shadow:0 6px 26px rgba(3,41,26,.10);
+  overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+.msg{position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);border:1.5px solid var(--green100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy)}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;color:var(--theme);opacity:.35;font-family:Georgia,serif}
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;padding-left:13px;
+  border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:var(--green700);margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+figure{margin:20px 0 24px;background:#f6faf8;border:1px solid var(--line);border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+blockquote{margin:20px 0;padding:16px 22px;background:var(--green50);border-left:5px solid var(--theme);
+  border-radius:0 10px 10px 0;color:var(--green700);font-size:.95rem}
+blockquote strong{color:var(--navy)}
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#03291a,#0b6b4f);color:#d7fff1;font-size:1.06rem;font-weight:700;
+  line-height:1.7;box-shadow:0 6px 18px rgba(3,41,26,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600}
+th.ng{background:#7d1a1e}th.ok{background:#04704e}
+td{padding:11px 15px;border-bottom:1px solid #e6efea;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f5faf8}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+td.k{font-weight:700;color:var(--navy);white-space:nowrap}
+code{font-family:'Consolas','SFMono-Regular',monospace;font-size:.88em;background:#eaf5f0;color:var(--green700);padding:1px 6px;border-radius:4px}
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;background:linear-gradient(135deg,#03291a,#0b6b4f);
+  color:#e2fff4;box-shadow:0 8px 24px rgba(3,41,26,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#d3f5e7}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#ffd98a}
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;background:#fbfdfc;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;color:var(--navy);
+  background:#eef7f3;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+details.notes strong{color:var(--navy)}
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--green700);background:var(--green100);
+  border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+@media (max-width:640px){.hero{padding:28px 22px 24px}.hero h1{font-size:1.36rem}
+  .slide-body{padding:22px 18px 26px}.msg{font-size:1.05rem;padding:18px 18px 18px 52px}}
+@media print{body{background:#fff}.wrap{margin:0;max-width:none}
+  .slide,.hero{box-shadow:none;break-inside:avoid}details.notes{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.10 ／ spec駆動開発</div>
+      <h1>なぜ「設計書を渡す」と<br>精度が跳ね上がるのか</h1>
+      <p class="sub">「プロンプトが上手い人」の正体は、凝った言い回しではありません。</p>
+      <div class="badges">
+        <span class="badge">🛠 実務</span>
+        <span class="badge">⏱ 6分（スライド2枚）</span>
+        <span class="badge">📍 CD実行の待ち時間（研修の背骨）</span>
+        <span class="badge hl">優先度 ★★★</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 320 200" role="img" aria-label="設計書をAIに渡すとコードが生成され、変更は設計書から入るという循環">
+        <!-- 設計書 -->
+        <rect x="16" y="52" width="76" height="94" rx="9" fill="#fff" opacity=".96"/>
+        <g fill="#8fd9bd">
+          <rect x="28" y="66" width="52" height="6" rx="3"/>
+          <rect x="28" y="80" width="40" height="6" rx="3"/>
+          <rect x="28" y="94" width="52" height="6" rx="3"/>
+          <rect x="28" y="108" width="34" height="6" rx="3"/>
+          <rect x="28" y="122" width="46" height="6" rx="3"/>
+        </g>
+        <text x="54" y="166" font-size="12" font-weight="700" fill="#bdf0dd" text-anchor="middle">設計書</text>
+        <!-- 矢印 -->
+        <path d="M100 92 H140" stroke="#f7c873" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M134 85 L144 92 L134 99 Z" fill="#f7c873"/>
+        <text x="122" y="80" font-size="10.5" fill="#f7c873" text-anchor="middle">AI</text>
+        <!-- コード -->
+        <rect x="152" y="52" width="88" height="94" rx="9" fill="#0d2b1e" stroke="#12a37a"/>
+        <g font-family="Consolas, monospace" font-size="9" fill="#7fe8c8">
+          <text x="162" y="70">class Book</text>
+          <text x="162" y="86">  Controller</text>
+          <text x="162" y="102">  @Get</text>
+          <text x="162" y="118">  list()</text>
+        </g>
+        <text x="196" y="166" font-size="12" font-weight="700" fill="#bdf0dd" text-anchor="middle">コード</text>
+        <!-- 検証 -->
+        <circle cx="282" cy="92" r="26" fill="#12a37a"/>
+        <path d="M271 92 l7 8 l15 -17" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="282" y="140" font-size="11.5" font-weight="700" fill="#bdf0dd" text-anchor="middle">検証</text>
+        <!-- 戻り矢印 -->
+        <path d="M282 122 V182 H54 V152" fill="none" stroke="#8ff0d0" stroke-width="2.5" stroke-dasharray="6 5"/>
+        <path d="M47 158 L54 146 L61 158 Z" fill="#8ff0d0"/>
+        <text x="168" y="196" font-size="10.5" fill="#8ff0d0" text-anchor="middle">変更は必ず設計書から</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- SLIDE 1 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> 渡すもので、こんなに変わる</div>
+  <div class="slide-body">
+
+    <div class="msg">AIの出力品質は、<br>ほぼ「何を渡したか」で決まる</div>
+
+    <h2>同じAI・同じモデルでも、渡すものでこれだけ変わる</h2>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:22%"></th>
+            <th class="ng" style="width:39%">❌ 「いい感じの書籍管理画面を作って」</th>
+            <th class="ok">✅ 設計書 ＋ モジュール一覧 ＋ CDルール</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="k">AIがやること</td><td>仕様を<strong style="color:#b4232a">創作</strong>する</td><td>仕様を<strong>翻訳</strong>する</td></tr>
+          <tr><td class="k">項目名</td><td>それっぽい名前を発明</td><td>設計書どおり</td></tr>
+          <tr><td class="k">クラス名</td><td>毎回変わる</td><td>モジュール一覧に一致</td></tr>
+          <tr><td class="k">コーディング規約</td><td>AIの好み</td><td>サンプルコードに追従</td></tr>
+          <tr><td class="k">レビュー</td><td>仕様の確認から始まる</td><td>差分の確認で済む</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 720 260" role="img" aria-label="曖昧な指示は出力が発散し、仕様を渡すと収束することを示す図">
+        <!-- 左：発散 -->
+        <text x="170" y="26" font-size="14" font-weight="700" fill="#b4232a" text-anchor="middle">❌ 曖昧な指示</text>
+        <circle cx="170" cy="52" r="11" fill="#e5484d"/>
+        <g stroke="#e5484d" stroke-width="3" stroke-linecap="round">
+          <path d="M164 62 L84 176"/><path d="M170 63 L142 176"/><path d="M170 63 L198 176"/><path d="M176 62 L256 176"/>
+        </g>
+        <g fill="#f6c9cb">
+          <rect x="66" y="182" width="36" height="30" rx="6"/><rect x="124" y="182" width="36" height="30" rx="6"/>
+          <rect x="180" y="182" width="36" height="30" rx="6"/><rect x="238" y="182" width="36" height="30" rx="6"/>
+        </g>
+        <text x="170" y="236" font-size="13.5" font-weight="700" fill="#b4232a" text-anchor="middle">毎回ちがう成果物</text>
+        <text x="300" y="120" font-size="12.5" font-weight="700" fill="#b4232a">発散</text>
+
+        <!-- 区切り -->
+        <line x1="360" y1="20" x2="360" y2="240" stroke="#dde7e2" stroke-width="2" stroke-dasharray="6 6"/>
+
+        <!-- 右：収束 -->
+        <text x="550" y="26" font-size="14" font-weight="700" fill="#04704e" text-anchor="middle">✅ 仕様を渡す</text>
+        <circle cx="550" cy="52" r="11" fill="#059669"/>
+        <g stroke="#059669" stroke-width="3" stroke-linecap="round">
+          <path d="M544 62 L520 176"/><path d="M548 63 L540 176"/><path d="M552 63 L560 176"/><path d="M556 62 L580 176"/>
+        </g>
+        <g fill="#a9e8d3">
+          <rect x="502" y="182" width="36" height="30" rx="6"/><rect x="522" y="182" width="36" height="30" rx="6" opacity=".85"/>
+          <rect x="542" y="182" width="36" height="30" rx="6" opacity=".85"/><rect x="562" y="182" width="36" height="30" rx="6"/>
+        </g>
+        <text x="550" y="236" font-size="13.5" font-weight="700" fill="#04704e" text-anchor="middle">毎回ほぼ同じ成果物</text>
+        <text x="632" y="120" font-size="12.5" font-weight="700" fill="#04704e">収束</text>
+      </svg>
+      <figcaption>情報が足りないと、AIは黙って埋める。埋めた部分が、後でレビューを一番苦しめる</figcaption>
+    </figure>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>「プロンプトが上手い人」の正体は、凝った言い回しを知っていることではありません。<strong>必要な情報を過不足なく渡している</strong>だけです</li>
+          <li>情報が足りないと、AIは黙って埋めます。埋めた部分が、後でレビューを一番苦しめる</li>
+          <li>今日渡している設計書とルールファイルは、その「埋めさせない」ための材料です</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> コードが正 → 設計が正</div>
+  <div class="slide-body">
+
+    <div class="msg">「コードが正」から「設計が正」へ<br>── これがspec駆動開発</div>
+
+    <h2>従来の開発</h2>
+    <figure>
+      <svg viewBox="0 0 720 170" role="img" aria-label="従来は設計書から人が実装し、設計書は陳腐化してコードが真実になる">
+        <rect x="40" y="34" width="180" height="52" rx="10" fill="#f1f4f7" stroke="#c3cdd8" stroke-width="2" stroke-dasharray="6 5"/>
+        <text x="130" y="66" font-size="15" font-weight="700" fill="#8494a8" text-anchor="middle">設計書</text>
+        <path d="M228 60 H420" stroke="#8494a8" stroke-width="3"/>
+        <path d="M414 53 L424 60 L414 67 Z" fill="#8494a8"/>
+        <text x="324" y="48" font-size="12.5" fill="#5b6c82" text-anchor="middle">人が実装</text>
+        <rect x="432" y="34" width="180" height="52" rx="10" fill="#0d2b1e"/>
+        <text x="522" y="66" font-size="15" font-weight="700" fill="#7fe8c8" text-anchor="middle">コード</text>
+
+        <text x="130" y="112" font-size="12.5" fill="#b4232a" text-anchor="middle">書いた瞬間から陳腐化</text>
+        <text x="130" y="132" font-size="12.5" fill="#8494a8" text-anchor="middle">直しても誰も読まない</text>
+        <text x="522" y="112" font-size="12.5" font-weight="700" fill="#04704e" text-anchor="middle">真実はこちら</text>
+        <text x="522" y="132" font-size="12.5" fill="#5b6c82" text-anchor="middle">「コード見ればわかる」</text>
+      </svg>
+    </figure>
+
+    <h2>spec駆動開発</h2>
+    <figure>
+      <svg viewBox="0 0 720 200" role="img" aria-label="spec駆動では設計書からAIがコードを生成し、変更は必ず設計書から入れる循環になる">
+        <rect x="30" y="30" width="164" height="54" rx="10" fill="#059669"/>
+        <text x="112" y="63" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">設計書</text>
+        <path d="M202 57 H286" stroke="#059669" stroke-width="4"/>
+        <path d="M280 49 L292 57 L280 65 Z" fill="#059669"/>
+        <text x="244" y="44" font-size="12" font-weight="700" fill="#04704e" text-anchor="middle">AIが生成</text>
+
+        <rect x="298" y="30" width="150" height="54" rx="10" fill="#0d2b1e"/>
+        <text x="373" y="63" font-size="15" font-weight="700" fill="#7fe8c8" text-anchor="middle">コード</text>
+        <path d="M456 57 H540" stroke="#059669" stroke-width="4"/>
+        <path d="M534 49 L546 57 L534 65 Z" fill="#059669"/>
+        <rect x="552" y="30" width="146" height="54" rx="10" fill="#12a37a"/>
+        <text x="625" y="56" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">ビルド</text>
+        <text x="625" y="74" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">／テスト</text>
+
+        <!-- 戻り -->
+        <path d="M625 92 V132 H112 V96" fill="none" stroke="#f59e0b" stroke-width="3.5"/>
+        <path d="M104 104 L112 90 L120 104 Z" fill="#f59e0b"/>
+        <rect x="266" y="114" width="212" height="34" rx="17" fill="#fff8e6" stroke="#f4d79a" stroke-width="2"/>
+        <text x="372" y="136" font-size="13" font-weight="700" fill="#92400e" text-anchor="middle">変更は必ずここから入れる</text>
+
+        <text x="360" y="180" font-size="14" font-weight="700" fill="#04704e" text-anchor="middle">設計書を直す → 生成し直す → 検証する</text>
+      </svg>
+    </figure>
+
+    <h2>何が変わるか</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:24%"></th><th style="width:34%">従来</th><th>spec駆動</th></tr></thead>
+        <tbody>
+          <tr><td class="k">仕様変更の入口</td><td>コード</td><td><strong>設計書</strong></td></tr>
+          <tr><td class="k">設計書の鮮度</td><td>落ちる一方</td><td>直さないとコードが出ないので<strong>維持される</strong></td></tr>
+          <tr><td class="k">設計書を書く動機</td><td>成果物だから</td><td><strong>実行される仕様だから</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hilite">
+      💡 「設計書を書く時間が惜しい」は逆
+      <small>AIに渡す前提で書くと、設計書が初めて "実行される仕様" になる</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">💡</span><strong>「設計書を書く時間が惜しい」は逆</strong>。AIに渡す前提で書くと、設計書が初めて"実行される仕様"になる</li>
+        <li><span class="ic">💡</span>設計書のメンテが続かなかった最大の理由は「直しても何も起きないから」。spec駆動では<strong>直さないとコードが変わらない</strong></li>
+        <li><span class="ic">🎯</span>午後の「機能追加」フェーズで、<strong>設計書を直す → 生成し直す</strong>の往復を実際に体験します。今日の一番の持ち帰りはここ</li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>我々が長年悩んできた「設計書とコードが乖離する」問題に、初めて構造的な答えが出た、というのがこの話の要点です</li>
+          <li>乖離したのは怠慢だからではなく、設計書を直すインセンティブが仕組みとして無かったからです</li>
+          <li>spec駆動では、設計書がコードの生成元になる。だから直す理由ができる。逆に言うと、<strong>AIに読ませられない設計書には価値がなくなっていく</strong>、という話でもあります</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<footer>AI小話 No.10 ／ spec駆動の理由 ｜ 🛠 実務 ｜ 6分</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話03 ｜ いま、画面の向こうで何が起きているのか（エージェントループ）</title>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#eaeff6; --card:#ffffff; --line:#dfe6ef;
+  --navy:#0f2b4e; --blue:#1a5fb4; --blue-l:#3584e4;
+  --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --accent:#06d6a0; --accent-d:#059669; --accent50:#e7fbf4;
+  --amber:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea;
+  --violet:#5b5bd6; --violet50:#eef0fa;
+  --r:14px;
+  --theme:var(--blue); --theme-d:var(--navy); --theme50:var(--blue50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px; line-height:1.85; color:var(--ink); background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%, #dce7f7 0%, transparent 45%),
+                   radial-gradient(circle at 100% 0%, #e6e9fa 0%, transparent 40%);
+  background-attachment:fixed; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+
+/* ============ HERO ============ */
+.hero{background:linear-gradient(135deg,#0b2340 0%,#134c8f 55%,#2a7bd6 100%);
+  color:#fff;border-radius:20px;padding:40px 40px 34px;position:relative;overflow:hidden;
+  box-shadow:0 18px 44px rgba(11,35,64,.28)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,var(--accent),#8b8bf0,var(--accent))}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 320px;min-width:250px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#9ecbff;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.9rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#c9e2ff}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
+  padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.28);color:#eaf4ff}
+.badge.hl{background:var(--accent);border-color:transparent;color:#04301f}
+
+/* ============ SLIDE ============ */
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;
+  box-shadow:0 6px 26px rgba(15,43,78,.10);overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;
+  font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+
+.msg{position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);border:1.5px solid var(--blue100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy)}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;
+  color:var(--theme);opacity:.35;font-family:Georgia,serif}
+
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;
+  padding-left:13px;border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:#1e4a8a;margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+
+figure{margin:20px 0 24px;background:#f7fafd;border:1px solid var(--line);border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* ログ風ブロック */
+.log{background:#0d1826;border-radius:11px;padding:16px 18px;font-family:'Consolas','SFMono-Regular',monospace;
+  font-size:.85rem;line-height:1.95;color:#c8d6e5;overflow-x:auto;margin:18px 0 22px;
+  white-space:pre;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.log .t{color:#5b6c82}
+.log .k{color:#7fe8c8;font-weight:700}
+.log .f{color:#9ecbff}
+.log .e{color:#ff9f9f}
+.log .ok{color:#8ff0d0}
+
+/* コード（Java） */
+pre.code{background:#0d1826;border-radius:11px;padding:18px 20px;overflow-x:auto;margin:18px 0 22px;
+  font-family:'Consolas','SFMono-Regular',monospace;font-size:.88rem;line-height:1.9;color:#dfe8f3}
+pre.code .kw{color:#ff9ecb}
+pre.code .cm{color:#6b8199;font-style:italic}
+pre.code .hi{color:#7fe8c8;font-weight:700}
+pre.code .st{color:#f7c873}
+
+/* 停止条件 */
+.stops{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:18px 0 24px}
+.stop{border-radius:12px;padding:16px 18px;border:1px solid var(--line);background:#fff;
+  box-shadow:0 2px 8px rgba(15,43,78,.06)}
+.stop .h{font-weight:700;font-size:.98rem;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.stop .d{font-size:.88rem;color:var(--ink2);line-height:1.7}
+.stop.g{border-left:5px solid var(--accent-d)} .stop.g .h{color:#04452f}
+.stop.y{border-left:5px solid var(--amber)}   .stop.y .h{color:var(--amber700)}
+.stop.r{border-left:5px solid var(--red)}     .stop.r .h{color:#b4232a}
+
+/* 役割分担 */
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0 22px}
+.role-c{border-radius:12px;padding:20px;color:#fff;box-shadow:0 6px 18px rgba(15,43,78,.18)}
+.role-c.brain{background:linear-gradient(135deg,#2c2c7a,#5b5bd6)}
+.role-c.loop{background:linear-gradient(135deg,#334155,#64748b)}
+.role-c .ic{font-size:2rem;display:block;margin-bottom:6px}
+.role-c .who{font-size:1.05rem;font-weight:700;margin-bottom:8px}
+.role-c .what{font-size:.9rem;line-height:1.75;opacity:.95}
+@media (max-width:640px){.roles{grid-template-columns:1fr}}
+
+blockquote{margin:20px 0;padding:16px 22px;background:var(--blue50);border-left:5px solid var(--theme);
+  border-radius:0 10px 10px 0;color:#1e4a8a;font-size:.95rem}
+blockquote strong{color:var(--navy)}
+
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 22px}
+.vs>div{border-radius:10px;padding:14px 18px;font-size:.92rem;line-height:1.75}
+.vs .no{background:var(--red50);border:1px solid #f6c9cb;color:#7d1a1e}
+.vs .yes{background:var(--accent50);border:1px solid #a9e8d3;color:#04452f}
+.vs strong{font-weight:700}
+@media (max-width:640px){.vs{grid-template-columns:1fr}}
+
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#04301f,#065f46);color:#d7fff1;
+  font-size:1.06rem;font-weight:700;line-height:1.7;box-shadow:0 6px 18px rgba(6,95,70,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600;white-space:nowrap}
+td{padding:11px 15px;border-bottom:1px solid #e8edf3;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f6f9fd}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+code{font-family:'Consolas','SFMono-Regular',monospace;font-size:.88em;
+  background:#eef3f9;color:#1e40af;padding:1px 6px;border-radius:4px}
+
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;
+  background:linear-gradient(135deg,#0b2340,#16406f);color:#e8f2ff;box-shadow:0 8px 24px rgba(11,35,64,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#dceaff}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#8ff0d0}
+
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;background:#fcfdfe;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;color:var(--navy);
+  background:#f2f6fb;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+details.notes strong{color:var(--navy)}
+
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--blue700);
+  background:var(--blue100);border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+
+@media (max-width:640px){
+  .hero{padding:28px 22px 24px}.hero h1{font-size:1.4rem}
+  .slide-body{padding:22px 18px 26px}.msg{font-size:1.05rem;padding:18px 18px 18px 52px}
+}
+@media print{
+  body{background:#fff}.wrap{margin:0;max-width:none}
+  .slide,.hero{box-shadow:none;break-inside:avoid}
+  details.notes{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.03 ／ エージェントループ</div>
+      <h1>いま、画面の向こうで<br>何が起きているのか</h1>
+      <p class="sub">この待ち時間、AIは考え込んでいるのではなく、手を動かしています。</p>
+      <div class="badges">
+        <span class="badge">🔧 仕組み</span>
+        <span class="badge">⏱ 6分（スライド2枚）</span>
+        <span class="badge">📍 一番最初の長い待ち時間（CD実行中）</span>
+        <span class="badge hl">優先度 ★★★</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 320 210" role="img" aria-label="AIが道具を使って作業を繰り返しているイラスト">
+        <defs>
+          <linearGradient id="rb" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f2f7ff"/><stop offset="1" stop-color="#cfe1fa"/>
+          </linearGradient>
+        </defs>
+        <!-- 回転する円弧 -->
+        <circle cx="160" cy="105" r="82" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="10"/>
+        <path d="M160 23 A82 82 0 0 1 236 60" fill="none" stroke="#06d6a0" stroke-width="10" stroke-linecap="round"/>
+        <path d="M78 130 A82 82 0 0 0 128 179" fill="none" stroke="#8b8bf0" stroke-width="10" stroke-linecap="round"/>
+        <!-- ロボット -->
+        <line x1="160" y1="58" x2="160" y2="44" stroke="#9ecbff" stroke-width="3"/>
+        <circle cx="160" cy="40" r="6" fill="#06d6a0"/>
+        <rect x="118" y="58" width="84" height="72" rx="18" fill="url(#rb)" stroke="#9ecbff" stroke-width="2"/>
+        <circle cx="141" cy="88" r="9" fill="#0f2b4e"/><circle cx="144" cy="85" r="3" fill="#fff"/>
+        <circle cx="179" cy="88" r="9" fill="#0f2b4e"/><circle cx="182" cy="85" r="3" fill="#fff"/>
+        <rect x="146" y="110" width="28" height="6" rx="3" fill="#9ecbff"/>
+        <!-- 道具アイコン -->
+        <g>
+          <circle cx="66" cy="66" r="20" fill="#fff" opacity=".92"/><text x="66" y="73" font-size="19" text-anchor="middle">📄</text>
+          <circle cx="256" cy="140" r="20" fill="#fff" opacity=".92"/><text x="256" y="147" font-size="19" text-anchor="middle">⚙</text>
+          <circle cx="160" cy="184" r="20" fill="#fff" opacity=".92"/><text x="160" y="191" font-size="19" text-anchor="middle">🔨</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- ================= SLIDE 1 ================= -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> 待ち時間の正体</div>
+  <div class="slide-body">
+
+    <div class="msg">この5分、AIは「考え込んでいる」のではなく<br>「手を動かしている」</div>
+
+    <h2>Think → Act → Observe のループ</h2>
+    <figure>
+      <svg viewBox="0 0 720 380" role="img" aria-label="考える・道具を使う・結果を見る、の3ステップを繰り返す円環図">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#1a5fb4"/>
+          </marker>
+          <linearGradient id="c1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3584e4"/><stop offset="1" stop-color="#1a5fb4"/></linearGradient>
+          <linearGradient id="c2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fe8c8"/><stop offset="1" stop-color="#059669"/></linearGradient>
+          <linearGradient id="c3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b8bf0"/><stop offset="1" stop-color="#5b5bd6"/></linearGradient>
+        </defs>
+
+        <!-- ① 考える -->
+        <circle cx="360" cy="70" r="52" fill="url(#c1)"/>
+        <text x="360" y="62" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">① 考える</text>
+        <text x="360" y="82" font-size="11.5" fill="#cfe4ff" text-anchor="middle">Think</text>
+        <text x="360" y="20" font-size="12.5" font-weight="700" fill="#0f2b4e" text-anchor="middle">次に何をすべきかを判断する</text>
+
+        <!-- ② 道具を使う -->
+        <circle cx="556" cy="248" r="52" fill="url(#c2)"/>
+        <text x="556" y="242" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">② 道具</text>
+        <text x="556" y="262" font-size="11.5" fill="#e0fff5" text-anchor="middle">Act</text>
+        <g font-size="12" fill="#04452f" text-anchor="start">
+          <text x="618" y="228">・設計書を読む</text>
+          <text x="618" y="248">・ファイルを書く</text>
+          <text x="618" y="268">・mvn を叩く</text>
+        </g>
+
+        <!-- ③ 結果を見る -->
+        <circle cx="164" cy="248" r="52" fill="url(#c3)"/>
+        <text x="164" y="242" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">③ 結果</text>
+        <text x="164" y="262" font-size="11.5" fill="#e4e4ff" text-anchor="middle">Observe</text>
+        <g font-size="12" fill="#2c2c7a" text-anchor="end">
+          <text x="102" y="228">読んだ中身・</text>
+          <text x="102" y="248">ビルドのエラー文・</text>
+          <text x="102" y="268">テスト結果</text>
+        </g>
+
+        <!-- 進行方向の矢印 -->
+        <path d="M420 118 Q500 160 528 200" fill="none" stroke="#1a5fb4" stroke-width="4" marker-end="url(#ah)"/>
+        <path d="M504 288 Q360 350 216 288" fill="none" stroke="#1a5fb4" stroke-width="4" marker-end="url(#ah)"/>
+        <path d="M192 200 Q220 160 300 118" fill="none" stroke="#1a5fb4" stroke-width="4" marker-end="url(#ah)"/>
+
+        <!-- 中央ラベル -->
+        <rect x="266" y="176" width="188" height="46" rx="23" fill="#0f2b4e"/>
+        <text x="360" y="198" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">目的を達成するまで</text>
+        <text x="360" y="214" font-size="12" fill="#8ff0d0" text-anchor="middle">何十回も繰り返す</text>
+      </svg>
+      <figcaption>1回の指示の裏で、この輪が数十周まわっている</figcaption>
+    </figure>
+
+    <ul class="dots">
+      <li>いま画面に流れているログが、そのまま<strong>①②③の記録</strong>になっている</li>
+      <li>「Read 〇〇.md」「Edit BookController.java」「Run mvn compile」＝ <strong>②の実行ログ</strong></li>
+    </ul>
+
+    <div class="log"><span class="t">[12:04:31]</span> <span class="k">Read</span>  <span class="f">Docsシステム/外部設計/BK01_書籍一覧.md</span>
+<span class="t">[12:04:33]</span> <span class="k">Read</span>  <span class="f">CD_ルール.md</span>
+<span class="t">[12:04:40]</span> <span class="k">Write</span> <span class="f">src/main/java/.../BookController.java</span>
+<span class="t">[12:04:52]</span> <span class="k">Run</span>   <span class="f">mvn -q compile</span>
+<span class="t">[12:05:18]</span>       <span class="e">ERROR: cannot find symbol  BookService.findAll()</span>
+<span class="t">[12:05:21]</span> <span class="k">Read</span>  <span class="f">src/main/java/.../BookService.java</span>
+<span class="t">[12:05:29]</span> <span class="k">Edit</span>  <span class="f">BookController.java</span>
+<span class="t">[12:05:41]</span> <span class="k">Run</span>   <span class="f">mvn -q compile</span>
+<span class="t">[12:06:03]</span>       <span class="ok">BUILD SUCCESS</span></div>
+
+    <h2>ChatGPTでのチャットとは、ここが決定的に違う</h2>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th style="width:22%"></th><th>チャット（今まで触ったもの）</th><th>エージェント（今日使っているもの）</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>できること</strong></td><td>文章を返す</td><td><strong>読む・書く・実行する</strong></td></tr>
+          <tr><td><strong>呼び出し回数</strong></td><td>1往復で1回</td><td><strong>目的達成まで何十回も</strong></td></tr>
+          <tr><td><strong>終わり方</strong></td><td>答えを返したら終了</td><td>目的を達成するまで止まらない</td></tr>
+          <tr><td><strong>待ち時間</strong></td><td>数秒</td><td><strong>数分〜十数分</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>実行ボタンを押してから数分。じっと待っていると「AIが悩んでいる」ように見えますが、実際には<strong>ファイルを読んで、書いて、コマンドを叩いて、エラーを読んで、直して</strong>を延々と繰り返しています</li>
+          <li>皆さんが手作業でやることと、やっている作業自体は変わりません。ただ、それを止まらずに回し続けている</li>
+          <li>手元のログを見てください。いま何番目のファイルを触っているか、見えるはずです</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- ================= SLIDE 2 ================= -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> 中身と持ち帰り</div>
+  <div class="slide-body">
+
+    <div class="msg">賢いのは「毎回1発の判断」。<br>それを繋いでいるのは、ただのループ</div>
+
+    <h2>中身は、驚くほど素朴なプログラム</h2>
+<pre class="code"><span class="kw">while</span> (終わっていない) {
+    出力 = <span class="hi">LLMを呼ぶ</span>(これまでの全経緯);   <span class="cm">// ← 賢いのはココだけ</span>
+    <span class="kw">if</span> (出力がツール呼び出し) {
+        結果 = ツールを実行する();          <span class="cm">// 検索する / ファイルを読む / mvnを叩く</span>
+        これまでの全経緯 += 結果;           <span class="cm">// ← 末尾に足す</span>
+    } <span class="kw">else</span> {
+        <span class="kw">break</span>;                            <span class="cm">// 文章を返してきた＝完了</span>
+    }
+}</pre>
+
+    <h2>役割分担はこうなっている</h2>
+    <div class="roles">
+      <div class="role-c brain">
+        <span class="ic">🧠</span>
+        <div class="who">判断 ── LLM（1つだけ）</div>
+        <div class="what">次に何をすべきか。<br>毎回まっさらな1発の推論で決める</div>
+      </div>
+      <div class="role-c loop">
+        <span class="ic">⚙</span>
+        <div class="who">実行・接続 ── ただのプログラム</div>
+        <div class="what">ツールを実行し、結果を末尾に足して、<br>もう一度LLMを呼ぶ</div>
+      </div>
+    </div>
+
+    <div class="vs">
+      <div class="no"><strong>❌ よくある誤解</strong><br>指揮者AIがいて、専門AIに仕事を振っている</div>
+      <div class="yes"><strong>✅ 実際</strong><br><strong>同じ1つのモデル</strong>が、1行ずつ増えていく経緯を毎回読み直して、そのつど次の一手を決めている</div>
+    </div>
+
+    <h2>ループが止まる3つの条件</h2>
+    <div class="stops">
+      <div class="stop g"><div class="h">🟢 目的達成</div><div class="d">ビルドが通った、テストが緑になった</div></div>
+      <div class="stop y"><div class="h">🟡 手詰まり</div><div class="d">自分で直せないと判断した</div></div>
+      <div class="stop r"><div class="h">🔴 上限到達</div><div class="d">回数・トークンの上限に当たった</div></div>
+    </div>
+
+    <div class="hilite">
+      ⏳ 待ち時間 ＝ AIの作業時間
+      <small>長いのは、それだけ仕事をしている証拠</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">⏳</span><strong>待ち時間 ＝ AIの作業時間</strong>。長いのは、それだけ仕事をしている証拠</li>
+        <li><span class="ic">🔍</span><strong>ログは最良のデバッグ情報</strong>。「何を読んだか」「どこで詰まったか」が全部書いてある。うまくいかない時はまずログを遡る</li>
+        <li><span class="ic">🔧</span><strong>道具を与えるほど自走する</strong>。ビルドやテストを実行させると、AIは自分で誤りに気づいて直せる（＝今日のCD／UTの構成そのもの）</li>
+        <li><span class="ic">⚠</span><strong>毎回「全経緯」を読み直している</strong> ＝ ループが長引くほど経緯が膨らむ。これが次の話に直結する<span class="xref">→ 小話02</span></li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>ChatGPTでチャットした時との一番の違いはここです。あちらは「文章を返して終わり」、今日のものは「目的を達成するまで自分で回り続ける」</li>
+          <li>そして意外なのが<strong>中身の素朴さ</strong>です。裏で何体ものAIが連携しているように見えますが、実際には<strong>賢い部分は1つのモデルだけ</strong>で、周りはただのループなんです</li>
+          <li>しかも各判断は毎回1発です。前回何を考えたかを覚えているわけではなく、<strong>増えていく経緯を毎回まるごと読み直して</strong>、そのつど決め直している</li>
+          <li>だから止まった時に見るべきは、出力の最後ではなく<strong>ループの途中</strong>です。「設計書を読めていない」「同じエラーで3回ループしている」は、ログを見ればすぐ分かります</li>
+          <li>……そして、毎回まるごと読み直すということは、長く回すほど読む量が増えるということでもあります。それが次の小話につながります</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<footer>AI小話 No.03 ／ エージェントループ ｜ 🔧 仕組み ｜ 6分</footer>
+
+</div>
+</body>
+</html>

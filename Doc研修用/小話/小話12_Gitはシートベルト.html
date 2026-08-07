@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話12 ｜ Gitはシートベルト ― AI時代のコミット粒度</title>
+<style>
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#e9f2ee; --card:#fff; --line:#dde7e2;
+  --navy:#05412c; --green:#059669; --green50:#effaf5; --green100:#d5f5e8; --green700:#04704e;
+  --blue:#1a5fb4; --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --amber:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea;
+  --r:14px; --theme:var(--green); --theme-d:var(--navy); --theme50:var(--green50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px;line-height:1.85;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%,#d8efe4 0%,transparent 45%),
+                   radial-gradient(circle at 100% 0%,#fde8ec 0%,transparent 40%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+.hero{background:linear-gradient(135deg,#03291a 0%,#0b6b4f 55%,#12a37a 100%);color:#fff;border-radius:20px;
+  padding:40px 40px 34px;position:relative;overflow:hidden;box-shadow:0 18px 44px rgba(3,41,26,.28)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,#f7c873,#e5484d,#f7c873)}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 320px;min-width:250px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#8ff0d0;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.85rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#bdf0dd}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 12px;
+  border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#e6fff6}
+.badge.hl{background:#f7c873;border-color:transparent;color:#402400}
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;box-shadow:0 6px 26px rgba(3,41,26,.10);
+  overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+.msg{position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);border:1.5px solid var(--green100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy)}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;color:var(--theme);opacity:.35;font-family:Georgia,serif}
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;padding-left:13px;
+  border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:var(--green700);margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+figure{margin:20px 0 24px;background:#f6faf8;border:1px solid var(--line);border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* 変更ファイル一覧 */
+.diff{background:#fff;border:1px solid var(--line);border-radius:11px;overflow:hidden;margin:16px 0 22px}
+.diff-h{background:#0d2b1e;color:#bdf0dd;padding:10px 18px;font-family:'Consolas',monospace;font-size:.88rem}
+.diff-b{padding:12px 18px;display:flex;flex-direction:column;gap:5px}
+.fl{display:flex;align-items:center;gap:12px;padding:7px 12px;border-radius:8px;
+  font-family:'Consolas','SFMono-Regular',monospace;font-size:.88rem}
+.fl .m{flex:0 0 44px;text-align:center;font-size:11px;font-weight:700;border-radius:5px;padding:1px 0}
+.fl.ask{background:var(--green50);color:var(--green700)}
+.fl.ask .m{background:#a9e8d3;color:#04452f}
+.fl.un{background:#fff8e6;color:#7a4a08}
+.fl.un .m{background:#f4d79a;color:#7a3d05}
+.fl.dan{background:#fdecec;color:#7d1a1e;border:1.5px solid #f0a5b3;font-weight:700}
+.fl.dan .m{background:#e5484d;color:#fff}
+.fl .tail{margin-left:auto;font-size:11.5px;white-space:nowrap}
+.diff-f{padding:10px 18px;background:#f6faf8;border-top:1px dashed var(--line);
+  font-size:.92rem;font-weight:700;color:var(--navy)}
+.askline{margin:6px 0 0;font-size:.95rem;font-weight:700;color:#b4232a;text-align:center}
+
+/* コミット2点 */
+.commits{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 8px}
+.cm{border-radius:12px;padding:20px 22px;color:#fff;box-shadow:0 6px 18px rgba(3,41,26,.2)}
+.cm.a{background:linear-gradient(135deg,#03291a,#0b6b4f)}
+.cm.b{background:linear-gradient(135deg,#0f2b4e,#1a5fb4)}
+.cm .n{font-size:11.5px;letter-spacing:.12em;font-weight:700;opacity:.8}
+.cm .t{font-size:1.08rem;font-weight:700;margin:5px 0 6px}
+.cm .d{font-size:.89rem;opacity:.95}
+@media (max-width:640px){.commits{grid-template-columns:1fr}}
+
+.steps{counter-reset:st;margin:16px 0 22px}
+.step{position:relative;padding:13px 18px 13px 56px;background:#fff;border:1px solid var(--line);
+  border-radius:11px;margin-bottom:9px;font-size:.94rem;color:var(--ink2);line-height:1.7}
+.step::before{counter-increment:st;content:counter(st);position:absolute;left:15px;top:13px;width:26px;height:26px;
+  border-radius:50%;background:var(--green);color:#fff;font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+.step strong{color:var(--navy)}
+.step .badge-w{float:right;font-size:11.5px;font-weight:700;color:#b4232a;background:#fdecec;
+  border-radius:5px;padding:1px 8px;margin-left:8px}
+.step::after{content:'';position:absolute;left:28px;bottom:-10px;width:2px;height:10px;background:#cfe0d8}
+.step:last-child::after{display:none}
+
+blockquote{margin:20px 0;padding:16px 22px;background:var(--green50);border-left:5px solid var(--theme);
+  border-radius:0 10px 10px 0;color:var(--green700);font-size:.95rem}
+blockquote strong{color:var(--navy)}
+blockquote.warn{background:#fdecec;border-left-color:var(--red);color:#7d1a1e}
+blockquote.warn strong{color:#b4232a}
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#03291a,#0b6b4f);color:#d7fff1;font-size:1.06rem;font-weight:700;
+  line-height:1.7;box-shadow:0 6px 18px rgba(3,41,26,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600}
+td{padding:11px 15px;border-bottom:1px solid #e6efea;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f5faf8}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+code{font-family:'Consolas','SFMono-Regular',monospace;font-size:.88em;background:#eaf5f0;color:var(--green700);padding:1px 6px;border-radius:4px}
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;background:linear-gradient(135deg,#03291a,#0b6b4f);
+  color:#e2fff4;box-shadow:0 8px 24px rgba(3,41,26,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#d3f5e7}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#ffd98a}
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;background:#fbfdfc;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;color:var(--navy);
+  background:#eef7f3;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+details.notes strong{color:var(--navy)}
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--green700);background:var(--green100);
+  border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+@media (max-width:640px){.hero{padding:28px 22px 24px}.hero h1{font-size:1.36rem}
+  .slide-body{padding:22px 18px 26px}.msg{font-size:1.05rem;padding:18px 18px 18px 52px}}
+@media print{body{background:#fff}.wrap{margin:0;max-width:none}
+  .slide,.hero{box-shadow:none;break-inside:avoid}details.notes{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.12 ／ コミット粒度</div>
+      <h1>Gitはシートベルト<br>― AI時代のコミット粒度</h1>
+      <p class="sub">AIが50ファイル書き換えた。戻せますか？</p>
+      <div class="badges">
+        <span class="badge">🛠 実務</span>
+        <span class="badge">⏱ 4分（スライド2枚）</span>
+        <span class="badge">📍 機能追加フェーズの直前</span>
+        <span class="badge hl">優先度 ★★★</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 320 200" role="img" aria-label="コミット地点があれば安全に戻れることを示すイラスト">
+        <!-- 道 -->
+        <rect x="14" y="92" width="292" height="20" rx="10" fill="rgba(255,255,255,.16)"/>
+        <!-- コミット点 -->
+        <circle cx="46" cy="102" r="14" fill="#06d6a0"/>
+        <path d="M39 102 l5 6 l10 -12" stroke="#03291a" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="46" y="140" font-size="11" font-weight="700" fill="#8ff0d0" text-anchor="middle">投げる前</text>
+        <circle cx="274" cy="102" r="14" fill="#06d6a0"/>
+        <path d="M267 102 l5 6 l10 -12" stroke="#03291a" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="274" y="140" font-size="11" font-weight="700" fill="#8ff0d0" text-anchor="middle">動いたら</text>
+        <!-- 暴れる区間 -->
+        <path d="M64 102 q16 -26 32 0 q16 26 32 0 q16 -26 32 0 q16 26 32 0 q16 -26 32 0" fill="none"
+              stroke="#f7c873" stroke-width="4" stroke-linecap="round"/>
+        <text x="160" y="52" font-size="12" font-weight="700" fill="#f7c873" text-anchor="middle">AIが暴れる区間</text>
+        <!-- 戻る矢印 -->
+        <path d="M266 164 H56" stroke="#8ff0d0" stroke-width="2.5" stroke-dasharray="6 5"/>
+        <path d="M64 157 L52 164 L64 171 Z" fill="#8ff0d0"/>
+        <text x="160" y="188" font-size="11" fill="#bdf0dd" text-anchor="middle">いつでもここに戻れる</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- SLIDE 1 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> 変更範囲は頭の外に出る</div>
+  <div class="slide-body">
+
+    <div class="msg">AIは、あなたが思っているより<br>広い範囲を書き換える</div>
+
+    <h2>掴み ──「関連する箇所も直しておきました」</h2>
+    <div class="diff">
+      <div class="diff-h">依頼： 「BookDeleteController に削除確認を追加して」</div>
+      <div class="diff-b">
+        <div class="fl ask"><span class="m">M</span>BookDeleteController.java<span class="tail">← 頼んだもの</span></div>
+        <div class="fl un"><span class="m">M</span>BookService.java<span class="tail">← 頼んでいない</span></div>
+        <div class="fl un"><span class="m">M</span>BookMapper.java<span class="tail">← 頼んでいない</span></div>
+        <div class="fl un"><span class="m">M</span>テンプレート 3枚<span class="tail">← 頼んでいない</span></div>
+        <div class="fl dan"><span class="m">M</span>既存のテスト 2本<span class="tail">← 頼んでいない ★危険</span></div>
+      </div>
+      <div class="diff-f">計 8ファイル変更</div>
+    </div>
+    <p class="askline">…この状態から「さっきの状態に戻して」と言えますか？</p>
+
+    <h2>AIの特性として、こうなる</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:40%">特性</th><th>結果</th></tr></thead>
+        <tbody>
+          <tr><td><strong>一貫性を保とうとする</strong></td><td>呼び出し元・関連クラスまで直しにいく</td></tr>
+          <tr><td><strong>止まらずに進む</strong></td><td>気づいた時には広範囲が変わっている</td></tr>
+          <tr><td><strong>悪気なく"良かれと思って"やる</strong></td><td>既存の動いていたコードまで書き換わる</td></tr>
+          <tr><td><strong>途中で止まることもある</strong></td><td><strong>中途半端に変更された状態</strong>が残る</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <blockquote class="warn">
+      ⚠ 一番怖いのは「壊した」ではなく「<strong>どこが変わったか分からなくなる</strong>」こと
+    </blockquote>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>手で書いていた頃は、変更範囲は自分の頭の中にありました。AIに任せると、<strong>変更範囲が自分の頭の外</strong>に出ます</li>
+          <li>しかもAIは親切なので、頼んでいない所まで整合性を取ろうとして直します。多くは正しいのですが、<strong>既存のテストを直されるのは相当危険</strong>です</li>
+          <li>ここで唯一の安全装置がGitです。Gitは今までも大事でしたが、AI時代は<strong>位置づけが変わります</strong></li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> 守るのは2つのタイミングだけ</div>
+  <div class="slide-body">
+
+    <div class="msg">「いつでも捨てられる状態」を保つのが、<br>速さの前提条件</div>
+
+    <h2>🔒 2つのタイミングだけ守る</h2>
+    <div class="commits">
+      <div class="cm a">
+        <div class="n">TIMING 1</div>
+        <div class="t">① AIに投げる前 → コミット</div>
+        <div class="d">きれいな出発点を作る。ここに戻れる</div>
+      </div>
+      <div class="cm b">
+        <div class="n">TIMING 2</div>
+        <div class="t">② 動いたら即 → コミット</div>
+        <div class="d">戻れる着地点を確保する</div>
+      </div>
+    </div>
+    <figure>
+      <svg viewBox="0 0 720 130" role="img" aria-label="投げる前と動いた後の2点でコミットし、その間の暴れる区間を挟む図">
+        <line x1="90" y1="60" x2="630" y2="60" stroke="#dde7e2" stroke-width="10" stroke-linecap="round"/>
+        <path d="M120 60 q30 -30 60 0 q30 30 60 0 q30 -30 60 0 q30 30 60 0 q30 -30 60 0 q30 30 60 0 q30 -30 60 0"
+              fill="none" stroke="#f59e0b" stroke-width="4"/>
+        <circle cx="90" cy="60" r="15" fill="#059669"/>
+        <path d="M82 60 l6 7 l11 -13" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="630" cy="60" r="15" fill="#059669"/>
+        <path d="M622 60 l6 7 l11 -13" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="90" y="30" font-size="13" font-weight="700" fill="#04704e" text-anchor="middle">投げる前</text>
+        <text x="630" y="30" font-size="13" font-weight="700" fill="#04704e" text-anchor="middle">動いた</text>
+        <text x="360" y="30" font-size="13" font-weight="700" fill="#92400e" text-anchor="middle">AIが暴れる区間</text>
+        <text x="90" y="100" font-size="12.5" fill="#5b6c82" text-anchor="middle">▲ ここに戻れる</text>
+        <text x="630" y="100" font-size="12.5" fill="#5b6c82" text-anchor="middle">▲ ここまで確保</text>
+      </svg>
+    </figure>
+
+    <h2>AI時代のコミット粒度</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:44%">従来</th><th>AI活用時</th></tr></thead>
+        <tbody>
+          <tr><td>機能が完成したら</td><td><strong>1回の指示ごと</strong>でよい</td></tr>
+          <tr><td>きれいな単位で</td><td>汚くてよい。<strong>後でまとめられる</strong></td></tr>
+          <tr><td>メッセージを丁寧に</td><td><code>WIP: BK01削除 AI生成</code> で十分</td></tr>
+          <tr><td>変更を積み上げる</td><td><strong>捨てる前提</strong>で積む</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>差分レビューが、そのまま作業になる</h2>
+    <p><code>git diff</code> ／ VS Code のソース管理ビューを開いて、上から順に。</p>
+    <div class="steps">
+      <div class="step"><strong>頼んでいないファイルが変わっていないか</strong><span class="badge-w">最初に見る</span></div>
+      <div class="step"><strong>既存のテストが書き換えられていないか</strong><span class="badge-w">特に重要</span></div>
+      <div class="step"><strong>中身が仕様どおりか</strong><span class="xref">→ 小話15</span></div>
+    </div>
+
+    <div class="hilite">
+      🚗 Gitはシートベルト
+      <small>事故らない自信ではなく、事故った時に助かるために締める</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">✅</span><strong>AIに投げる前にコミット</strong>。これだけで、やり直しのコストがほぼゼロになる<span class="xref">→ 小話11</span></li>
+        <li><span class="ic">✅</span>粒度は細かくてよい。<strong>きれいさより、戻れることが優先</strong></li>
+        <li><span class="ic">✅</span>レビューの入口は「<strong>変更ファイル一覧</strong>」。頼んでいない所が変わっていたら要注意</li>
+        <li><span class="ic">🚗</span>Gitはシートベルト。<strong>事故った時に助かるために締める</strong></li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>言っていること自体は当たり前です。ただ、AI活用では<strong>この当たり前の効き目が桁違いに大きい</strong></li>
+          <li>戻れる状態があると、<strong>思い切って任せられる</strong>ようになります。逆に戻れないと、慎重になりすぎてAIの速さを活かせません</li>
+          <li>今日のハンズオンでも、CD実行の前・UT実行の前に一度コミットしてから進めてみてください。<strong>安心して捨てられる</strong>というのが、どれだけ作業を速くするか体感できると思います</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<footer>AI小話 No.12 ／ Gitはシートベルト ｜ 🛠 実務 ｜ 4分</footer>
+
+</div>
+</body>
+</html>

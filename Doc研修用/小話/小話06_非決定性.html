@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話06 ｜ 同じ指示なのに、毎回結果が違う</title>
+<style>
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#eaeff6; --card:#fff; --line:#dfe6ef;
+  --navy:#0f2b4e; --blue:#1a5fb4; --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --accent:#06d6a0; --accent-d:#059669; --accent50:#e7fbf4;
+  --amber:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea;
+  --violet:#5b5bd6; --violet50:#eef0fa;
+  --r:14px; --theme:var(--blue); --theme-d:var(--navy); --theme50:var(--blue50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px;line-height:1.85;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%,#dce7f7 0%,transparent 45%),
+                   radial-gradient(circle at 100% 0%,#e6e9fa 0%,transparent 40%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+.hero{background:linear-gradient(135deg,#0b2340 0%,#134c8f 55%,#2a7bd6 100%);color:#fff;border-radius:20px;
+  padding:40px 40px 34px;position:relative;overflow:hidden;box-shadow:0 18px 44px rgba(11,35,64,.28)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,var(--accent),#8b8bf0,var(--accent))}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 320px;min-width:250px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#9ecbff;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.9rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#c9e2ff}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 12px;
+  border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#eaf4ff}
+.badge.hl{background:var(--accent);border-color:transparent;color:#04301f}
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;box-shadow:0 6px 26px rgba(15,43,78,.10);
+  overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+.msg{position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);border:1.5px solid var(--blue100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy)}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;color:var(--theme);opacity:.35;font-family:Georgia,serif}
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;padding-left:13px;
+  border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:#1e4a8a;margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+figure{margin:20px 0 24px;background:#f7fafd;border:1px solid var(--line);border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* 隣同士の比較 */
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 22px}
+.pc{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.pc .ph{padding:9px 16px;font-size:12.5px;font-weight:700;color:#fff}
+.pc.p1 .ph{background:#1a5fb4}
+.pc.p2 .ph{background:#5b5bd6}
+.pc pre{padding:14px 16px;font-family:'Consolas','SFMono-Regular',monospace;font-size:.83rem;
+  line-height:1.85;color:#2b3a4f;overflow-x:auto;white-space:pre}
+.pc .df{color:#b4232a;font-weight:700;background:#fdecec;border-radius:3px}
+@media (max-width:640px){.pair{grid-template-columns:1fr}}
+
+/* 縛る／検証する */
+.box{border-radius:12px;margin:16px 0;overflow:hidden;border:1px solid var(--line);background:#fff}
+.box-h{padding:12px 20px;font-weight:700;font-size:1rem;color:#fff;display:flex;align-items:center;gap:10px}
+.box.bind .box-h{background:linear-gradient(90deg,#0f2b4e,#1a5fb4)}
+.box.verify .box-h{background:linear-gradient(90deg,#04452f,#059669)}
+.box-b{padding:16px 20px}
+.itm{display:flex;gap:14px;align-items:baseline;padding:8px 0;border-bottom:1px dashed #e6ecf3}
+.itm:last-child{border-bottom:none}
+.itm .k{flex:0 0 190px;font-family:'Consolas','SFMono-Regular',monospace;font-size:.88rem;font-weight:700;color:var(--navy)}
+.itm .v{font-size:.92rem;color:var(--ink2)}
+@media (max-width:640px){.itm{flex-direction:column;gap:2px}.itm .k{flex:none}}
+.between{text-align:center;font-size:.9rem;font-weight:700;color:var(--amber700);margin:6px 0}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 22px}
+.cmp>div{border-radius:10px;padding:16px 18px;font-size:.92rem;line-height:1.85}
+.cmp .bad{background:var(--red50);border:1px solid #f6c9cb;color:#7d1a1e}
+.cmp .good{background:var(--accent50);border:1px solid #a9e8d3;color:#04452f}
+.cmp .h{font-weight:700;display:block;margin-bottom:8px;font-size:.95rem}
+@media (max-width:640px){.cmp{grid-template-columns:1fr}}
+
+blockquote{margin:20px 0;padding:16px 22px;background:var(--blue50);border-left:5px solid var(--theme);
+  border-radius:0 10px 10px 0;color:#1e4a8a;font-size:.95rem}
+blockquote strong{color:var(--navy)}
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#04301f,#065f46);color:#d7fff1;font-size:1.06rem;font-weight:700;
+  line-height:1.7;box-shadow:0 6px 18px rgba(6,95,70,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600;white-space:nowrap}
+td{padding:11px 15px;border-bottom:1px solid #e8edf3;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f6f9fd}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+code{font-family:'Consolas','SFMono-Regular',monospace;font-size:.88em;background:#eef3f9;color:#1e40af;padding:1px 6px;border-radius:4px}
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;background:linear-gradient(135deg,#0b2340,#16406f);
+  color:#e8f2ff;box-shadow:0 8px 24px rgba(11,35,64,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#dceaff}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#8ff0d0}
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;background:#fcfdfe;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;color:var(--navy);
+  background:#f2f6fb;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+details.notes strong{color:var(--navy)}
+.qa{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-top:28px;
+  padding:26px 32px 30px;box-shadow:0 4px 18px rgba(15,43,78,.07)}
+.qa h2{margin-top:0}
+.qa-item{border-left:3px solid var(--blue100);padding:2px 0 2px 16px;margin-bottom:18px}
+.qa-item .q{font-weight:700;color:var(--navy);font-size:.96rem}
+.qa-item .a{font-size:.93rem;color:var(--ink2);margin-top:4px}
+.qa-item .a::before{content:'→ ';color:var(--accent-d);font-weight:700}
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--blue700);background:var(--blue100);
+  border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+@media (max-width:640px){.hero{padding:28px 22px 24px}.hero h1{font-size:1.4rem}
+  .slide-body{padding:22px 18px 26px}.msg{font-size:1.05rem;padding:18px 18px 18px 52px}}
+@media print{body{background:#fff}.wrap{margin:0;max-width:none}
+  .slide,.hero,.qa{box-shadow:none;break-inside:avoid}details.notes{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.06 ／ 非決定性</div>
+      <h1>同じ指示なのに、<br>毎回結果が違う</h1>
+      <p class="sub">隣の人と同じプロンプトを打ったのに、出てきたコードが違う。</p>
+      <div class="badges">
+        <span class="badge">🔧 仕組み</span>
+        <span class="badge">⏱ 4分（スライド2枚）</span>
+        <span class="badge">📍 機能追加の待ち時間</span>
+        <span class="badge hl">優先度 ★★☆</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 320 200" role="img" aria-label="同じ入力から複数の異なる出力に分岐するイラスト">
+        <defs>
+          <marker id="a6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#9ecbff"/></marker>
+        </defs>
+        <!-- 入力 -->
+        <rect x="14" y="80" width="86" height="40" rx="10" fill="#fff" opacity=".95"/>
+        <text x="57" y="105" font-size="12.5" font-weight="700" fill="#0f2b4e" text-anchor="middle">同じ指示</text>
+        <!-- 分岐 -->
+        <path d="M104 100 Q150 100 176 42" fill="none" stroke="#9ecbff" stroke-width="3" marker-end="url(#a6)"/>
+        <path d="M104 100 Q150 100 176 100" fill="none" stroke="#9ecbff" stroke-width="3" marker-end="url(#a6)"/>
+        <path d="M104 100 Q150 100 176 158" fill="none" stroke="#9ecbff" stroke-width="3" marker-end="url(#a6)"/>
+        <!-- 出力 -->
+        <rect x="186" y="22" width="120" height="40" rx="10" fill="#06d6a0"/>
+        <text x="246" y="47" font-size="12.5" font-weight="700" fill="#04301f" text-anchor="middle">出力パターンA</text>
+        <rect x="186" y="80" width="120" height="40" rx="10" fill="#8b8bf0"/>
+        <text x="246" y="105" font-size="12.5" font-weight="700" fill="#1c1c52" text-anchor="middle">出力パターンB</text>
+        <rect x="186" y="138" width="120" height="40" rx="10" fill="#f7c873"/>
+        <text x="246" y="163" font-size="12.5" font-weight="700" fill="#7a3d05" text-anchor="middle">出力パターンC</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- SLIDE 1 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> なぜ揺れるのか</div>
+  <div class="slide-body">
+
+    <div class="msg">AIは「同じ答えを返す装置」として<br>作られていない</div>
+
+    <h2>掴み ── 隣の人と同じプロンプトを打ったのに</h2>
+    <div class="pair">
+      <div class="pc p1">
+        <div class="ph">Aさんの出力</div>
+<pre>public class <span class="df">BookController</span> {
+  @Autowired
+  private <span class="df">BookService</span> service;
+  ...
+}</pre>
+      </div>
+      <div class="pc p2">
+        <div class="ph">Bさんの出力（同じ指示）</div>
+<pre>public class <span class="df">BookListController</span> {
+  private final <span class="df">BookRepository</span> repo;
+  ...
+}</pre>
+      </div>
+    </div>
+
+    <h2>理由 ── 次の1語を"選ぶ"ところに、ゆらぎがある</h2>
+    <figure>
+      <svg viewBox="0 0 720 300" role="img" aria-label="確率分布からサンプリングして1語を選ぶため、以降の展開が全て変わる図">
+        <defs>
+          <marker id="a6b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#1a5fb4"/></marker>
+        </defs>
+        <text x="14" y="24" font-size="13.5" font-weight="700" fill="#0f2b4e">「public class Book」の次に来る語の確率</text>
+        <rect x="14" y="36" width="360" height="140" rx="10" fill="#fff" stroke="#1a5fb4" stroke-width="2"/>
+        <g font-family="Consolas, monospace">
+          <rect x="26" y="48" width="150" height="24" rx="5" fill="#06d6a0"/>
+          <text x="188" y="66" font-size="13" font-weight="700" fill="#04452f">Controller　41%</text>
+          <rect x="26" y="80" width="99" height="24" rx="5" fill="#8b8bf0"/>
+          <text x="188" y="98" font-size="13" fill="#2c2c7a">Service　　 27%</text>
+          <rect x="26" y="112" width="66" height="24" rx="5" fill="#9ecbff"/>
+          <text x="188" y="130" font-size="13" fill="#1e40af">Entity　　　18%</text>
+          <rect x="26" y="144" width="33" height="24" rx="5" fill="#c3d4ee"/>
+          <text x="188" y="162" font-size="13" fill="#5b6c82">Repository 09%</text>
+        </g>
+        <!-- サンプリング注記 -->
+        <path d="M382 60 H420 V152 H382" fill="none" stroke="#b45309" stroke-width="2.5"/>
+        <text x="432" y="98" font-size="13" font-weight="700" fill="#b45309">毎回この分布から</text>
+        <text x="432" y="118" font-size="13" font-weight="700" fill="#b45309">"サンプリング"して選ぶ</text>
+
+        <path d="M194 182 V208" stroke="#1a5fb4" stroke-width="3" marker-end="url(#a6b)"/>
+        <rect x="14" y="216" width="692" height="40" rx="9" fill="#fee9ea" stroke="#f6c9cb" stroke-width="2"/>
+        <text x="360" y="241" font-size="14" font-weight="700" fill="#b4232a" text-anchor="middle">1語ズレると、その後の全部がズレていく</text>
+        <text x="14" y="282" font-size="12.5" fill="#6b7c93">※ 常に最上位を選ぶ設定にすれば揺れは減るが、ゼロにはならない。実行環境・並列処理の都合でもわずかな差が出る</text>
+      </svg>
+    </figure>
+
+    <h2>ゆらぐもの / ゆらがないもの</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:50%">🌊 ゆらぐ</th><th>⚓ ゆらぎにくい</th></tr></thead>
+        <tbody>
+          <tr><td>変数名・メソッド名の付け方</td><td><strong>設計書に明記された項目名</strong></td></tr>
+          <tr><td>コメントの文言</td><td><strong>ルールファイルで縛った書き方</strong></td></tr>
+          <tr><td>実装アプローチの選択</td><td><strong>完了条件（テストが通る／通らない）</strong></td></tr>
+          <tr><td>説明の言い回し</td><td><strong>既存コードに倣った構造</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>「同じ入力 → 同じ出力」は、我々が慣れているプログラムの性質です。AIはそうなっていません</li>
+          <li>次の1語を確率分布から選んでいるので、<strong>1語違えば、その後の展開が全部変わります</strong><span class="xref">→ 小話05と同じ仕組みの別の顔</span></li>
+          <li>ここで大事なのは「困ったね」で終わらないことです。<strong>ゆらぐ部分と、ゆらがせない部分を分けて設計する</strong>のが実務です</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> どう付き合うか</div>
+  <div class="slide-body">
+
+    <div class="msg">品質は、プロンプトの言い回しではなく<br>「ルールと検証」で担保する</div>
+
+    <div class="cmp">
+      <div class="bad">
+        <span class="h">❌ 再現性を、プロンプトで作ろうとする</span>
+        「さっきと同じように書いて」<br>
+        「前と同じ感じで」<br>
+        <span style="opacity:.85">└ 前がどうだったかは、AIの側に残っていない<span class="xref">→ 小話01</span></span>
+      </div>
+      <div class="good">
+        <span class="h">✅ ゆらいでも同じ結論に落ちる仕組みを置く</span>
+        <strong>縛る</strong>（ルール・設計書）<br>
+        ＋<br>
+        <strong>検証する</strong>（コンパイル・テスト・レビュー）
+      </div>
+    </div>
+
+    <div class="box bind">
+      <div class="box-h">🔒 縛る ── ゆらがせない所を固定する</div>
+      <div class="box-b">
+        <div class="itm"><span class="k">CD_ルール.md</span><span class="v">書き方を固定</span></div>
+        <div class="itm"><span class="k">モジュール一覧.md</span><span class="v">名前を固定</span></div>
+        <div class="itm"><span class="k">外部設計書</span><span class="v">仕様を固定</span></div>
+      </div>
+    </div>
+    <div class="between">↓ それでも残るゆらぎは ↓</div>
+    <div class="box verify">
+      <div class="box-h">🔬 検証する ── 通るか通らないかで決める</div>
+      <div class="box-b">
+        <div class="itm"><span class="k">mvn compile</span><span class="v">存在しない書き方を落とす</span></div>
+        <div class="itm"><span class="k">単体テスト</span><span class="v">振る舞いを固定する</span></div>
+        <div class="itm"><span class="k">人のレビュー</span><span class="v">仕様との一致を見る</span></div>
+      </div>
+    </div>
+
+    <h2>運用の考え方が変わる</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:46%">従来の感覚</th><th>AI時代の感覚</th></tr></thead>
+        <tbody>
+          <tr><td>手順どおりなら同じ物ができる</td><td><strong>毎回違う物ができる前提で設計する</strong></td></tr>
+          <tr><td>レビューは抜き取りでよい</td><td><strong>出力は毎回見る</strong>（同じ結果の保証がない）</td></tr>
+          <tr><td>良い出力が出たら手順を記録</td><td>良い出力が出たら<strong>ルールファイルに書く</strong><span class="xref">→ 小話14</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hilite">
+      💡 うまくいった時こそ、ルールファイルに残す
+      <small>次も同じ結果を引くための唯一の方法</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">✅</span><strong>再現しないのは不具合ではなく仕様</strong>。「同じにならない」を前提に運用を組む</li>
+        <li><span class="ic">✅</span>ブレを消したい所は、<strong>プロンプトでお願いするのではなくルールと設計書で縛る</strong></li>
+        <li><span class="ic">✅</span>最後の砦は<strong>機械的な検証</strong>（コンパイル・テスト）。ゆらいでも、ここは通るか通らないかで決まる</li>
+        <li><span class="ic">💡</span>うまくいった時こそ<strong>ルールファイルに残す</strong></li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>「隣の人と結果が違う」は、今日この後もきっと起きます。その時に「自分のやり方が悪いのか」と悩まないでください。<strong>そういうものです</strong></li>
+          <li>実務で怖いのは、レビューで一度OKを出したパターンが、次回は違う形で出てくること。だから<strong>言い方で揃えようとせず、ルールとテストで揃える</strong></li>
+          <li>これは我々の得意分野です。<strong>再現しないものを、検証で押さえ込む</strong>。テスト設計そのものですよね</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<section class="qa">
+  <h2>補足（質問が出たら）</h2>
+  <div class="qa-item">
+    <div class="q">Q. temperature を0にすれば同じ？</div>
+    <div class="a">揺れは大きく減るが、環境要因もあり完全な再現は保証されない。「ほぼ同じ」まで。</div>
+  </div>
+  <div class="qa-item">
+    <div class="q">Q. 同じ結果が欲しい場面は？</div>
+    <div class="a">その処理はAIではなくコードで書くべき、というサインでもある。</div>
+  </div>
+</section>
+
+<footer>AI小話 No.06 ／ 非決定性 ｜ 🔧 仕組み ｜ 4分</footer>
+
+</div>
+</body>
+</html>

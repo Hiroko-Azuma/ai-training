@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>02. 環境確認</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    line-height: 1.8;
+    color: #1f2937;
+    background:
+      radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 28%),
+      linear-gradient(180deg, #edf4ff 0%, #f8fafc 240px, #eef2f7 100%);
+  }
+  a {
+    color: #1d4ed8;
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #e5eefc;
+    color: #1e3a8a;
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.95em;
+  }
+  .page {
+    max-width: 980px;
+    margin: 36px auto;
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12);
+  }
+  .header {
+    padding: 44px 48px 36px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #0f3d91 0%, #2563eb 55%, #38bdf8 100%);
+  }
+  .header .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(219, 234, 254, 0.95);
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    margin: 0 0 12px;
+    font-size: 2.25rem;
+    line-height: 1.2;
+  }
+  .header p {
+    margin: 0;
+    color: rgba(239, 246, 255, 0.96);
+  }
+  .content {
+    padding: 40px 48px 48px;
+  }
+  .lead,
+  .callout,
+  .tips {
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin: 0 0 24px;
+  }
+  .lead {
+    background: #eff6ff;
+    border-left: 5px solid #2563eb;
+  }
+  .callout {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+  }
+  .tips {
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+  }
+  .tips h4,
+  .callout h4 {
+    margin: 0 0 10px;
+    color: #9a3412;
+    font-size: 1rem;
+  }
+  .text-red {
+    color: #dc2626;
+    font-weight: 700;
+  }
+  .callout h4 {
+    color: #334155;
+  }
+  h2 {
+    margin: 36px 0 16px;
+    padding-left: 14px;
+    border-left: 5px solid #2563eb;
+    color: #0f3d91;
+    font-size: 1.45rem;
+  }
+  h3 {
+    margin: 22px 0 10px;
+    color: #1e40af;
+    font-size: 1.05rem;
+  }
+  p { margin: 0 0 14px; }
+  ul {
+    margin: 0 0 14px;
+    padding-left: 22px;
+  }
+  li { margin-bottom: 8px; }
+  .img-card {
+    margin: 16px 0 24px;
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    text-align: center;
+  }
+  .img-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  .img-card figcaption {
+    margin-top: 10px;
+    font-size: 0.92rem;
+    color: #64748b;
+  }
+  .steps {
+    display: grid;
+    gap: 16px;
+    margin: 12px 0 24px;
+  }
+  .step {
+    padding: 18px 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid #dbeafe;
+    border-radius: 14px;
+  }
+  .step h4 {
+    margin: 0 0 10px;
+    color: #1d4ed8;
+    font-size: 1rem;
+  }
+  .rebuild {
+    margin: 12px 0 0;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px dashed #fb923c;
+    border-radius: 12px;
+  }
+  .final-notice {
+    margin: 28px 0 0;
+    padding: 22px 24px;
+    background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+    border: 2px solid #60a5fa;
+    border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.14);
+  }
+  .final-notice h3 {
+    margin: 0 0 10px;
+    color: #1e3a8a;
+    font-size: 1.1rem;
+  }
+  .final-notice p {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: #1e40af;
+  }
+  .footer {
+    padding: 20px 48px 28px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.9rem;
+    color: #64748b;
+    background: #f8fafc;
+  }
+  @media (max-width: 720px) {
+    .page { margin: 0; border-radius: 0; }
+    .header, .content, .footer { padding-left: 20px; padding-right: 20px; }
+    .header h1 { font-size: 1.8rem; }
+  }
+  @media print {
+    body {
+      background: #ffffff;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .page {
+      max-width: none;
+      margin: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="eyebrow">AI Training Material</div>
+      <h1>02. 環境確認 9:30-10:00</h1>
+      <p>GitHub Codespaces、VS Code、GitHub Copilot、Spring Boot アプリの起動確認までを行う手順です。</p>
+    </header>
+
+    <main class="content">
+      <section class="lead">
+        <p><strong>VS-CodeでMDを開いてCTRL+SHIFT+Vでプレビュー表示できます。</strong></p>
+      </section>
+
+      <section class="callout">
+        <h4>事前確認</h4>
+        <p>先に <a href="./99.トレサポ.md">99.トレサポ.md</a> の説明を実施する事。</p>
+      </section>
+
+      <h2>1. 実行環境の説明</h2>
+      <figure class="img-card">
+        <img src="./img/実行環境.svg" alt="実行環境">
+        <figcaption>実行環境</figcaption>
+      </figure>
+
+      <h2>2. GithubCodespacesに接続</h2>
+      <p><a href="https://github.com/ai-training-ORG/ai-training">GithubCodespacesのURL</a> にアクセスする。</p>
+
+      <h2>3. VS Codeの起動</h2>
+      <div class="steps">
+        <section class="step">
+          <h4>step1:Codeボタン押下 ⇒ CodeSpacesのタブ選択 ⇒ CodeSpacesの＋ボタンを押下</h4>
+          <ul>
+            <li>日本語版の場合、コードボタン ⇒ 符号空間のタブ選択 ⇒ CodeSpacesの＋ボタンを押下。</li>
+          </ul>
+          <figure class="img-card">
+            <img src="./img/02-3_VSCode.png" alt="VS Codeの起動">
+            <figcaption>VS Code の起動</figcaption>
+          </figure>
+        </section>
+      </div>
+
+      <section class="tips">
+        <h4>★Tips★</h4>
+        <ul>
+          <li>デフォルトは白基調デザインになっていますが、黒基調に変更したい場合は設定マーク ⇒ テーマ ⇒ 配色テーマで変更可能。</li>
+          <li>おすすめはダーク2026。お気に入りの配色にカスタマイズ可能。</li>
+        </ul>
+        <figure class="img-card">
+          <img src="./img/02-3_配色テーマ.png" alt="配色テーマ">
+          <figcaption>配色テーマ</figcaption>
+        </figure>
+      </section>
+
+      <div class="steps">
+        <section class="step">
+          <h4>step2: ブラウザ上でVSCodeが起動するので、起動完了するまでしばらく待つ</h4>
+          <p class="text-red">※ VSCodeは初回起動時にインスタンスを立ち上げて、必要な拡張機能などを読み込んで起動完了となります。起動中に後続手順を進めると正常に起動処理が行われず、後続手順に支障が出るので注意！</p>
+          <p>以下、起動中状態と起動完了状態の画面キャプチャを参考に判断すること（不安な点があれば講師に確認ください）。</p>
+
+          <h4>起動中のサンプル画面</h4>
+          <figure class="img-card">
+            <img src="./img/02-3_VSCode起動中サンプル.png" alt="起動中画面サンプル">
+            <figcaption>起動中画面サンプル</figcaption>
+          </figure>
+
+          <h4>起動完了のサンプル画面</h4>
+          <figure class="img-card">
+            <img src="./img/02-3_VSCode起動完了サンプル.png" alt="起動完了画面サンプル">
+            <figcaption>起動完了画面サンプル</figcaption>
+          </figure>
+        </section>
+      </div>
+
+      <h2>4. VS Codeへ資材配置</h2>
+      <div class="steps">
+        <section class="step">
+          <h4>step1: ダウンロードした教材の画像のフォルダををVSCode上にドラッグ</h4>
+          <figure class="img-card">
+            <img src="./img/file-copy.png" alt="ファイルコピー">
+            <figcaption>ファイルコピー</figcaption>
+          </figure>
+        </section>
+
+        <section class="step">
+          <h4>step2: VSCode上でマークダウンファイル「02.環境確認.md」を開き、プレビュー表示する</h4>
+          <ul>
+            <li>エクスプローラーから「02.環境確認.md」を開く。</li>
+            <li><code>Ctrl + Shift + V</code> を押してプレビュー表示する。</li>
+          </ul>
+          <figure class="img-card">
+            <img src="./img/02-4_MarkdownPreview.svg" alt="02.環境確認.md のプレビュー表示">
+            <figcaption>02.環境確認.md のプレビュー表示</figcaption>
+          </figure>
+        </section>
+        <section class="final-notice">
+          <h3>以後の進め方</h3>
+          <p>以後の手順は、VSCode上でマークダウンファイル（02.環境確認.md）のプレビューを表示した状態で進めてください。</p>
+        </section>
+  </div>
+</body>
+</html>

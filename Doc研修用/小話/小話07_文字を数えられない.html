@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話07 ｜ AIは文字を数えられない ―「strawberryのrは何個？」</title>
+<style>
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#eaeff6; --card:#fff; --line:#dfe6ef;
+  --navy:#0f2b4e; --blue:#1a5fb4; --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --accent:#06d6a0; --accent-d:#059669; --accent50:#e7fbf4;
+  --amber:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea;
+  --r:14px; --theme:var(--blue); --theme-d:var(--navy); --theme50:var(--blue50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px;line-height:1.85;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%,#dce7f7 0%,transparent 45%),
+                   radial-gradient(circle at 100% 0%,#fde8ec 0%,transparent 40%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+.hero{background:linear-gradient(135deg,#0b2340 0%,#134c8f 55%,#2a7bd6 100%);color:#fff;border-radius:20px;
+  padding:40px 40px 34px;position:relative;overflow:hidden;box-shadow:0 18px 44px rgba(11,35,64,.28)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,var(--accent),#ff7a9c,var(--accent))}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 320px;min-width:250px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#9ecbff;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.85rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#c9e2ff}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 12px;
+  border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#eaf4ff}
+.badge.hl{background:var(--accent);border-color:transparent;color:#04301f}
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;box-shadow:0 6px 26px rgba(15,43,78,.10);
+  overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+.msg{position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);border:1.5px solid var(--blue100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy)}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;color:var(--theme);opacity:.35;font-family:Georgia,serif}
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;padding-left:13px;
+  border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:#1e4a8a;margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+figure{margin:20px 0 24px;background:#f7fafd;border:1px solid var(--line);border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* クイズ */
+.quiz{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 12px}
+.qz{background:linear-gradient(135deg,#0f2b4e,#1a5fb4);color:#fff;border-radius:12px;padding:22px 24px;
+  text-align:center;box-shadow:0 6px 18px rgba(15,43,78,.22)}
+.qz .lbl{font-size:11.5px;letter-spacing:.14em;color:#9ecbff;font-weight:700}
+.qz .q{font-family:'Consolas','SFMono-Regular',monospace;font-size:1.15rem;font-weight:700;margin-top:8px}
+@media (max-width:640px){.quiz{grid-template-columns:1fr}}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 22px}
+.cmp>div{border-radius:10px;padding:16px 18px;font-size:.92rem;line-height:1.85}
+.cmp .bad{background:var(--red50);border:1px solid #f6c9cb;color:#7d1a1e}
+.cmp .good{background:var(--accent50);border:1px solid #a9e8d3;color:#04452f}
+.cmp .h{font-weight:700;display:block;margin-bottom:8px;font-size:.95rem}
+@media (max-width:640px){.cmp{grid-template-columns:1fr}}
+
+.steps{counter-reset:st;margin:18px 0 22px}
+.step{position:relative;padding:14px 18px 14px 58px;background:#fff;border:1px solid var(--line);
+  border-radius:11px;margin-bottom:10px;font-size:.94rem;color:var(--ink2);line-height:1.7}
+.step::before{counter-increment:st;content:counter(st);position:absolute;left:16px;top:14px;width:26px;height:26px;
+  border-radius:50%;background:var(--accent-d);color:#fff;font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+.step strong{color:var(--navy)}
+.step code{font-family:'Consolas',monospace;font-size:.9em;background:#0d1826;color:#7fe8c8;padding:2px 8px;border-radius:5px}
+.step::after{content:'';position:absolute;left:29px;bottom:-11px;width:2px;height:11px;background:#c6d5e6}
+.step:last-child::after{display:none}
+
+blockquote{margin:20px 0;padding:16px 22px;background:var(--blue50);border-left:5px solid var(--theme);
+  border-radius:0 10px 10px 0;color:#1e4a8a;font-size:.95rem}
+blockquote strong{color:var(--navy)}
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#04301f,#065f46);color:#d7fff1;font-size:1.06rem;font-weight:700;
+  line-height:1.7;box-shadow:0 6px 18px rgba(6,95,70,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600;white-space:nowrap}
+td{padding:11px 15px;border-bottom:1px solid #e8edf3;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f6f9fd}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+th.ng{background:#7d1a1e}th.ok{background:#04452f}
+code{font-family:'Consolas','SFMono-Regular',monospace;font-size:.88em;background:#eef3f9;color:#1e40af;padding:1px 6px;border-radius:4px}
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;background:linear-gradient(135deg,#0b2340,#16406f);
+  color:#e8f2ff;box-shadow:0 8px 24px rgba(11,35,64,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#dceaff}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#8ff0d0}
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;background:#fcfdfe;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;color:var(--navy);
+  background:#f2f6fb;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+details.notes strong{color:var(--navy)}
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--blue700);background:var(--blue100);
+  border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+@media (max-width:640px){.hero{padding:28px 22px 24px}.hero h1{font-size:1.36rem}
+  .slide-body{padding:22px 18px 26px}.msg{font-size:1.05rem;padding:18px 18px 18px 52px}}
+@media print{body{background:#fff}.wrap{margin:0;max-width:none}
+  .slide,.hero{box-shadow:none;break-inside:avoid}details.notes{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.07 ／ 箸休め</div>
+      <h1>AIは文字を数えられない<br>―「strawberryのrは何個？」</h1>
+      <p class="sub">あれだけ賢いのに、小学生でもできる事を間違える。</p>
+      <div class="badges">
+        <span class="badge">🔧 仕組み（箸休め）</span>
+        <span class="badge">⏱ 3分（スライド2枚）</span>
+        <span class="badge">📍 短い待ち時間／空気が重くなった時</span>
+        <span class="badge hl">優先度 ★☆☆</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 320 190" role="img" aria-label="人は1文字ずつ見えるがAIは塊で見ている対比イラスト">
+        <text x="14" y="34" font-size="12" font-weight="700" fill="#9ecbff">人が見ているもの</text>
+        <g font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#0f2b4e">
+          <rect x="14" y="44" width="22" height="28" rx="5" fill="#fff"/><text x="25" y="64" text-anchor="middle">s</text>
+          <rect x="40" y="44" width="22" height="28" rx="5" fill="#fff"/><text x="51" y="64" text-anchor="middle">t</text>
+          <rect x="66" y="44" width="22" height="28" rx="5" fill="#ffd0d8"/><text x="77" y="64" text-anchor="middle">r</text>
+          <rect x="92" y="44" width="22" height="28" rx="5" fill="#fff"/><text x="103" y="64" text-anchor="middle">a</text>
+          <rect x="118" y="44" width="22" height="28" rx="5" fill="#fff"/><text x="129" y="64" text-anchor="middle">w</text>
+          <rect x="144" y="44" width="22" height="28" rx="5" fill="#fff"/><text x="155" y="64" text-anchor="middle">b</text>
+          <rect x="170" y="44" width="22" height="28" rx="5" fill="#fff"/><text x="181" y="64" text-anchor="middle">e</text>
+          <rect x="196" y="44" width="22" height="28" rx="5" fill="#ffd0d8"/><text x="207" y="64" text-anchor="middle">r</text>
+          <rect x="222" y="44" width="22" height="28" rx="5" fill="#ffd0d8"/><text x="233" y="64" text-anchor="middle">r</text>
+          <rect x="248" y="44" width="22" height="28" rx="5" fill="#fff"/><text x="259" y="64" text-anchor="middle">y</text>
+        </g>
+        <text x="278" y="64" font-size="13" font-weight="700" fill="#7fe8c8">→ 3個</text>
+
+        <text x="14" y="112" font-size="12" font-weight="700" fill="#ffb3c0">AIが見ているもの</text>
+        <g font-family="Consolas, monospace" font-size="15" font-weight="700">
+          <rect x="14" y="122" width="62" height="32" rx="8" fill="#5b5bd6"/><text x="45" y="144" fill="#fff" text-anchor="middle">st</text>
+          <rect x="82" y="122" width="76" height="32" rx="8" fill="#8b8bf0"/><text x="120" y="144" fill="#fff" text-anchor="middle">raw</text>
+          <rect x="164" y="122" width="96" height="32" rx="8" fill="#5b5bd6"/><text x="212" y="144" fill="#fff" text-anchor="middle">berry</text>
+        </g>
+        <text x="276" y="144" font-size="15" font-weight="700" fill="#ffb3c0">？</text>
+        <text x="14" y="176" font-size="11.5" fill="#c9e2ff">塊の中に "r" が何個あるかは、塊の外からは見えない</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- SLIDE 1 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> 掴み ＋ 理由</div>
+  <div class="slide-body">
+
+    <div class="msg">あれだけ賢いのに、<br>小学生でもできる事を間違える</div>
+
+    <h2>掴み ── やってみてください</h2>
+    <div class="quiz">
+      <div class="qz"><div class="lbl">QUESTION 1</div><div class="q">strawberry の中に<br>"r" は何個ありますか？</div></div>
+      <div class="qz"><div class="lbl">QUESTION 2</div><div class="q">8127 × 349 は？</div></div>
+    </div>
+    <p class="note" style="font-size:12.5px;color:var(--muted);text-align:center">かつては、平然と間違えた（今も条件次第で間違える）</p>
+
+    <h2>理由 ── AIは文字を見ていない。トークンを見ている</h2>
+    <figure>
+      <svg viewBox="0 0 720 260" role="img" aria-label="人は1文字ずつ、AIは3つの塊として単語を見ている比較図">
+        <!-- 人 -->
+        <text x="14" y="26" font-size="13.5" font-weight="700" fill="#0f2b4e">人間が見ているもの</text>
+        <g font-family="Consolas, monospace" font-size="20" font-weight="700" fill="#0f2b4e">
+          <rect x="14" y="38" width="40" height="44" rx="8" fill="#fff" stroke="#c3d4ee"/><text x="34" y="68" text-anchor="middle">s</text>
+          <rect x="60" y="38" width="40" height="44" rx="8" fill="#fff" stroke="#c3d4ee"/><text x="80" y="68" text-anchor="middle">t</text>
+          <rect x="106" y="38" width="40" height="44" rx="8" fill="#ffd0d8" stroke="#f0a5b3"/><text x="126" y="68" text-anchor="middle">r</text>
+          <rect x="152" y="38" width="40" height="44" rx="8" fill="#fff" stroke="#c3d4ee"/><text x="172" y="68" text-anchor="middle">a</text>
+          <rect x="198" y="38" width="40" height="44" rx="8" fill="#fff" stroke="#c3d4ee"/><text x="218" y="68" text-anchor="middle">w</text>
+          <rect x="244" y="38" width="40" height="44" rx="8" fill="#fff" stroke="#c3d4ee"/><text x="264" y="68" text-anchor="middle">b</text>
+          <rect x="290" y="38" width="40" height="44" rx="8" fill="#fff" stroke="#c3d4ee"/><text x="310" y="68" text-anchor="middle">e</text>
+          <rect x="336" y="38" width="40" height="44" rx="8" fill="#ffd0d8" stroke="#f0a5b3"/><text x="356" y="68" text-anchor="middle">r</text>
+          <rect x="382" y="38" width="40" height="44" rx="8" fill="#ffd0d8" stroke="#f0a5b3"/><text x="402" y="68" text-anchor="middle">r</text>
+          <rect x="428" y="38" width="40" height="44" rx="8" fill="#fff" stroke="#c3d4ee"/><text x="448" y="68" text-anchor="middle">y</text>
+        </g>
+        <text x="492" y="68" font-size="14" font-weight="700" fill="#04452f">← 1文字ずつ数えられる</text>
+
+        <!-- AI -->
+        <text x="14" y="132" font-size="13.5" font-weight="700" fill="#2c2c7a">AIが見ているもの</text>
+        <g font-family="Consolas, monospace" font-size="20" font-weight="700" fill="#fff">
+          <rect x="14" y="144" width="112" height="48" rx="10" fill="#5b5bd6"/><text x="70" y="176" text-anchor="middle">st</text>
+          <rect x="134" y="144" width="140" height="48" rx="10" fill="#8b8bf0"/><text x="204" y="176" text-anchor="middle">raw</text>
+          <rect x="282" y="144" width="186" height="48" rx="10" fill="#5b5bd6"/><text x="375" y="176" text-anchor="middle">berry</text>
+        </g>
+        <text x="492" y="176" font-size="14" font-weight="700" fill="#2c2c7a">← 3つの塊</text>
+        <!-- 注記 -->
+        <path d="M204 198 V216" stroke="#b4232a" stroke-width="2.5"/>
+        <path d="M197 208 L204 220 L211 208 Z" fill="#b4232a"/>
+        <text x="14" y="240" font-size="12.5" fill="#b4232a">この塊の中に "r" が何個入っているかは、塊の外からは見えない</text>
+      </svg>
+    </figure>
+
+    <ul class="dots">
+      <li>数字も同じ。<code>8127</code> が <code>[81][27]</code> のような塊で入ってくる</li>
+      <li>筆算をしているのではなく、<strong>「それらしい数字の並び」を生成している</strong><span class="xref">→ 小話05</span></li>
+    </ul>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>これ、AIの限界がいちばん分かりやすく出る例です。難しい設計はできるのに、文字数えは苦手</li>
+          <li>理由は単純で、<strong>AIは文字ではなくトークンという塊で世界を見ている</strong>からです<span class="xref">→ 小話04</span></li>
+          <li>計算も同じで、計算しているのではなく<strong>計算結果らしい文字列を書いている</strong>だけです</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> だから道具にやらせる</div>
+  <div class="slide-body">
+
+    <div class="msg">苦手なことは、道具にやらせればいい<br>── それがAgentの存在意義</div>
+
+    <h2>今のAIが正解できるようになった理由</h2>
+    <div class="cmp">
+      <div class="bad">
+        <span class="h">❌ 昔</span>
+        頭の中で数えようとする<br>
+        ↓<br>
+        <strong>それらしい数字を書く</strong>
+      </div>
+      <div class="good">
+        <span class="h">✅ 今</span>
+        「これは数えるタスクだ」と判断して、<br>
+        <strong>コードを書いて実行する</strong>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step"><strong>「これは数えるタスクだ」と判断する</strong></div>
+      <div class="step"><strong>コードを書いて実行する</strong> &nbsp; <code>"strawberry".count("r")　─►　3</code></div>
+      <div class="step"><strong>実行結果を根拠に答える</strong></div>
+    </div>
+
+    <blockquote>
+      <strong>賢くなって数えられるようになったのではなく、数えるのをやめて機械に任せた</strong>。<br>
+      小話05の「Web検索で天気を取ってくる」と、まったく同じ構造です。
+    </blockquote>
+
+    <h2>この線引きが、そのまま実務の使い分けになる</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th class="ng" style="width:44%">❌ AIに直接やらせない</th><th class="ok">✅ AIに"やらせ方"を作らせる</th></tr></thead>
+        <tbody>
+          <tr><td>件数を数える／集計する</td><td><strong>集計するSQL・スクリプト</strong>を書かせて実行</td></tr>
+          <tr><td>計算する</td><td><strong>計算するコード</strong>を書かせて実行</td></tr>
+          <tr><td>正確な変換・置換</td><td><strong>変換ロジック</strong>を書かせて実行</td></tr>
+          <tr><td>網羅チェック</td><td><strong>チェックするテスト</strong>を書かせて実行</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hilite">
+      🔧 「AIに答えを聞く」より「答えを出す道具を作らせる」
+      <small>桁違いに正確になる</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">✅</span><strong>「AIに答えを聞く」より「答えを出す道具を作らせる」</strong>方が、桁違いに正確</li>
+        <li><span class="ic">✅</span>数える・計算する・正確に処理する系は、<strong>必ず実行結果を根拠にさせる</strong></li>
+        <li><span class="ic">✅</span>今日のハンズオンで <code>mvn compile</code> や UT を回させているのも、これと同じ発想</li>
+        <li><span class="ic">⚠</span>逆に言えば、<strong>検証手段のないタスクほど危ない</strong><span class="xref">→ 小話19</span></li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>笑い話に見えますが、実務上とても大事な線引きが入っています</li>
+          <li>「AIに聞く」のではなく「<strong>AIに、答えが出る仕組みを作らせて、その結果を見る</strong>」。この癖をつけるだけで精度が変わります</li>
+          <li>今日の研修でAIにビルドやテストを実行させているのは、まさにこれです。<strong>AIの言い分ではなく、機械の結果を信じる</strong>という設計になっています</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<footer>AI小話 No.07 ／ 文字を数えられない ｜ 🔧 仕組み（箸休め） ｜ 3分</footer>
+
+</div>
+</body>
+</html>

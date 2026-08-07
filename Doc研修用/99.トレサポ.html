@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>99. トレサポ</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    line-height: 1.8;
+    color: #1f2937;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(16, 185, 129, 0.12), transparent 30%),
+      radial-gradient(circle at 90% 0%, rgba(59, 130, 246, 0.14), transparent 35%),
+      linear-gradient(180deg, #f0fdf4 0%, #f8fafc 220px, #eef2f7 100%);
+  }
+  a {
+    color: #1d4ed8;
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+  .page {
+    max-width: 960px;
+    margin: 36px auto;
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12);
+  }
+  .header {
+    padding: 42px 48px 34px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #0f766e 0%, #0ea5e9 55%, #2563eb 100%);
+  }
+  .header .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(209, 250, 229, 0.95);
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    margin: 0 0 10px;
+    font-size: 2.2rem;
+    line-height: 1.2;
+  }
+  .header p {
+    margin: 0;
+    color: rgba(236, 253, 245, 0.95);
+  }
+  .content {
+    padding: 38px 48px 48px;
+  }
+  .lead {
+    background: #ecfeff;
+    border-left: 5px solid #0ea5e9;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 0 0 24px;
+  }
+  h2 {
+    margin: 34px 0 16px;
+    padding-left: 14px;
+    border-left: 5px solid #0ea5e9;
+    color: #0f766e;
+    font-size: 1.35rem;
+  }
+  p { margin: 0 0 14px; }
+  .note {
+    margin: 8px 0 14px;
+    color: #475569;
+    font-size: 0.96rem;
+  }
+  .warn {
+    margin: 18px 0 0;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    color: #9a3412;
+    font-weight: 600;
+  }
+  .img-card {
+    margin: 14px 0 24px;
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    text-align: center;
+  }
+  .img-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  .img-card figcaption {
+    margin-top: 10px;
+    font-size: 0.92rem;
+    color: #64748b;
+  }
+  .download-flow {
+    display: grid;
+    gap: 14px;
+    margin: 12px 0 24px;
+  }
+  .flow-arrow {
+    text-align: center;
+    color: #0f766e;
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1;
+    margin: -2px 0;
+  }
+  .footer {
+    padding: 20px 48px 28px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.9rem;
+    color: #64748b;
+    background: #f8fafc;
+  }
+  @media (max-width: 720px) {
+    .page { margin: 0; border-radius: 0; }
+    .header, .content, .footer { padding-left: 20px; padding-right: 20px; }
+    .header h1 { font-size: 1.78rem; }
+  }
+  @media print {
+    body {
+      background: #ffffff;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .page {
+      max-width: none;
+      margin: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="eyebrow">AI Training Support</div>
+      <h1>99. トレサポ</h1>
+      <p>ハンズオンの進捗確認とHELP対応のためのサポート手順です。</p>
+    </header>
+
+    <main class="content">
+      <section class="lead">
+        <p>ハンズオンの状況把握と参加者の皆様の <strong>Help!</strong> に対応するためのサポートツールです。</p>
+      </section>
+
+      <h2>1. ログイン</h2>
+      <p><a href="https://app-training-20260807-2681.azurewebsites.net/">トップURL</a></p>
+      <p>各自アクセスしてセッションに参加してください。URLは毎研修ごとに変わります。Teamsで案内します。</p>
+      <p>セッション共有パスワード: <strong>training-2026</strong><br>mailは会社メールでお願いします。</p>
+      <figure class="img-card">
+        <img src="./img/image99-001.png" alt="ログイン画面">
+        <figcaption>ログイン画面</figcaption>
+      </figure>
+
+      <h2>2. 進捗</h2>
+      <p>進捗はこのように見えます。対応するテーマが終わったら各自コースのボタンを押してください。</p>
+      <figure class="img-card">
+        <img src="./img/image99-002.png" alt="進捗画面">
+        <figcaption>進捗画面</figcaption>
+      </figure>
+
+      <h2>3. HELP</h2>
+      <p>ハンズオン中に困ったことがあれば、HELP!ボタンを押してください。</p>
+      <p>1日勝負の研修のため、エラーを深く追っている時間はあまり無い想定です。サポートのために5名ほど講師陣が待機していますので、遠慮なくHELP!を押してください。</p>
+      <figure class="img-card">
+        <img src="./img/image99-003.png" alt="HELPボタン画面">
+        <figcaption>HELP画面</figcaption>
+      </figure>
+
+      <h2>4. 研修資材のダウンロード</h2>
+      <p><strong>研修参加者は必ずダウンロードを行ってください。</strong></p>
+      <p>研修資材をダウンロードしてください(資料をクイック->zipファイルをDL&解凍)。</p>
+      <div class="download-flow">
+        <figure class="img-card">
+          <img src="./img/image99-004.png" alt="研修資材ダウンロード手順1">
+          <figcaption>ダウンロード手順 1</figcaption>
+        </figure>
+        <div class="flow-arrow">↓</div>
+        <figure class="img-card">
+          <img src="./img/image99-005.png" alt="研修資材ダウンロード手順2">
+          <figcaption>ダウンロード手順 2</figcaption>
+        </figure>
+      </div>
+
+      <h2>97. リモート参加者へのサポート</h2>
+      <p><a href="./92.リモートサポート.md">92.リモートサポート.md</a> の手順を参考とする。Teams画面共有を用いて対応。</p>
+
+      <h2>98. 講師陣へ</h2>
+      <p>メインの状況確認画面のURLは下記になります。</p>
+      <p><a href="https://app-training-20260807-2681.azurewebsites.net/instructor">講師陣URL</a></p>
+
+      <h2>99. その他</h2>
+      <div class="warn">Azure App ServiceのURLは毎回変わる可能性があります。<br>8/6時点: 2回目研修用のURLに変更済み</div>
+    </main>
+
+    <footer class="footer">
+      AI研修資料 | トレサポ運用ドキュメント
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話05 ｜ なぜAIは、平然と嘘をつくのか</title>
+<style>
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#eaeff6; --card:#fff; --line:#dfe6ef;
+  --navy:#0f2b4e; --blue:#1a5fb4; --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --accent:#06d6a0; --accent-d:#059669; --accent50:#e7fbf4;
+  --amber:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea;
+  --violet:#5b5bd6; --violet50:#eef0fa;
+  --r:14px; --theme:var(--blue); --theme-d:var(--navy); --theme50:var(--blue50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px;line-height:1.85;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%,#dce7f7 0%,transparent 45%),
+                   radial-gradient(circle at 100% 0%,#fdeede 0%,transparent 40%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+.hero{background:linear-gradient(135deg,#0b2340 0%,#134c8f 55%,#2a7bd6 100%);color:#fff;
+  border-radius:20px;padding:40px 40px 34px;position:relative;overflow:hidden;box-shadow:0 18px 44px rgba(11,35,64,.28)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,var(--accent),#4cc9f0,var(--accent))}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 320px;min-width:250px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#9ecbff;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.9rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#c9e2ff}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 12px;
+  border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#eaf4ff}
+.badge.hl{background:var(--accent);border-color:transparent;color:#04301f}
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;box-shadow:0 6px 26px rgba(15,43,78,.10);
+  overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+.msg{position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);border:1.5px solid var(--blue100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy)}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;color:var(--theme);opacity:.35;font-family:Georgia,serif}
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;padding-left:13px;
+  border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:#1e4a8a;margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+figure{margin:20px 0 24px;background:#f7fafd;border:1px solid var(--line);border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* 昔と今 */
+.thennow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 10px}
+.tn{border-radius:12px;padding:18px 20px;line-height:1.75}
+.tn .lbl{font-size:11.5px;font-weight:700;letter-spacing:.12em;margin-bottom:6px;display:block}
+.tn .q{font-family:'Consolas',monospace;font-size:.9rem;margin-bottom:8px;opacity:.9}
+.tn.old{background:var(--red50);border:1px solid #f6c9cb;color:#7d1a1e}
+.tn.new{background:var(--accent50);border:1px solid #a9e8d3;color:#04452f}
+.tn .ans{font-weight:700;font-size:1rem}
+@media (max-width:640px){.thennow{grid-template-columns:1fr}}
+
+/* ステップ縦フロー */
+.steps{counter-reset:st;margin:18px 0 22px}
+.step{position:relative;padding:14px 18px 14px 58px;background:#fff;border:1px solid var(--line);
+  border-radius:11px;margin-bottom:10px;font-size:.94rem;color:var(--ink2);line-height:1.7}
+.step::before{counter-increment:st;content:counter(st);position:absolute;left:16px;top:14px;
+  width:26px;height:26px;border-radius:50%;background:var(--theme);color:#fff;
+  font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step strong{color:var(--navy)}
+.step::after{content:'';position:absolute;left:29px;bottom:-11px;width:2px;height:11px;background:#c6d5e6}
+.step:last-child::after{display:none}
+.steps.g .step::before{background:var(--accent-d)}
+
+/* 3層防御 */
+.layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:18px 0 24px}
+.ly{border-radius:12px;padding:18px;color:#fff;box-shadow:0 6px 18px rgba(15,43,78,.16)}
+.ly .n{font-size:11.5px;font-weight:700;letter-spacing:.1em;opacity:.8}
+.ly .t{font-size:1.05rem;font-weight:700;margin:4px 0 8px}
+.ly .d{font-size:.88rem;line-height:1.7;opacity:.95}
+.ly1{background:linear-gradient(135deg,#0f2b4e,#1a5fb4)}
+.ly2{background:linear-gradient(135deg,#04452f,#059669)}
+.ly3{background:linear-gradient(135deg,#2c2c7a,#5b5bd6)}
+
+.alert{background:var(--red50);border:1px solid #f6c9cb;border-left:5px solid var(--red);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:20px 0}
+.alert .h{font-weight:700;color:#b4232a;margin-bottom:8px;font-size:.98rem}
+.alert ul{list-style:none}
+.alert li{position:relative;padding-left:20px;margin-bottom:6px;font-size:.92rem;color:#7d1a1e}
+.alert li::before{content:'▸';position:absolute;left:2px;color:var(--red);font-weight:700}
+blockquote{margin:20px 0;padding:16px 22px;background:var(--blue50);border-left:5px solid var(--theme);
+  border-radius:0 10px 10px 0;color:#1e4a8a;font-size:.95rem}
+blockquote strong{color:var(--navy)}
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#04301f,#065f46);color:#d7fff1;font-size:1.06rem;font-weight:700;
+  line-height:1.7;box-shadow:0 6px 18px rgba(6,95,70,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600;white-space:nowrap}
+td{padding:11px 15px;border-bottom:1px solid #e8edf3;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f6f9fd}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+tr.ok td{background:#eefaf5}
+tr.ng td{background:#fef3f3}
+code{font-family:'Consolas','SFMono-Regular',monospace;font-size:.88em;background:#eef3f9;color:#1e40af;padding:1px 6px;border-radius:4px}
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;background:linear-gradient(135deg,#0b2340,#16406f);
+  color:#e8f2ff;box-shadow:0 8px 24px rgba(11,35,64,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#dceaff}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#8ff0d0}
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;background:#fcfdfe;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;color:var(--navy);
+  background:#f2f6fb;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+details.notes strong{color:var(--navy)}
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--blue700);background:var(--blue100);
+  border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+@media (max-width:640px){
+  .hero{padding:28px 22px 24px}.hero h1{font-size:1.4rem}
+  .slide-body{padding:22px 18px 26px}.msg{font-size:1.05rem;padding:18px 18px 18px 52px}}
+@media print{body{background:#fff}.wrap{margin:0;max-width:none}
+  .slide,.hero{box-shadow:none;break-inside:avoid}details.notes{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.05 ／ ハルシネーション</div>
+      <h1>なぜAIは、<br>平然と嘘をつくのか</h1>
+      <p class="sub">存在しないメソッドを、堂々とサンプル付きで教えてくる。あれの正体。</p>
+      <div class="badges">
+        <span class="badge">🔧 仕組み</span>
+        <span class="badge">⏱ 6分（スライド2枚）</span>
+        <span class="badge">📍 UT実行の待ち時間</span>
+        <span class="badge hl">優先度 ★★★</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 320 200" role="img" aria-label="確率の高い言葉を選んで並べているAIのイラスト">
+        <!-- 吹き出し -->
+        <path d="M20 30 H196 A12 12 0 0 1 208 42 V116 A12 12 0 0 1 196 128 H70 L48 150 V128 H32 A12 12 0 0 1 20 116 V42 A12 12 0 0 1 32 30 Z" fill="#fff" opacity=".96"/>
+        <text x="36" y="56" font-size="12.5" font-weight="700" fill="#0f2b4e">次に来る言葉の確率</text>
+        <!-- バー -->
+        <g font-size="11.5" font-family="Consolas, monospace">
+          <rect x="36" y="66" width="86" height="14" rx="4" fill="#06d6a0"/>
+          <text x="130" y="77" fill="#04452f">晴れ 32%</text>
+          <rect x="36" y="86" width="48" height="14" rx="4" fill="#9ecbff"/>
+          <text x="130" y="97" fill="#1e40af">雨 18%</text>
+          <rect x="36" y="106" width="40" height="14" rx="4" fill="#c3d4ee"/>
+          <text x="130" y="117" fill="#5b6c82">曇り 15%</text>
+        </g>
+        <!-- ロボット -->
+        <line x1="266" y1="52" x2="266" y2="38" stroke="#9ecbff" stroke-width="3"/>
+        <circle cx="266" cy="34" r="6" fill="#f7c873"/>
+        <rect x="230" y="52" width="72" height="66" rx="16" fill="#f2f7ff" stroke="#9ecbff" stroke-width="2"/>
+        <circle cx="250" cy="80" r="8" fill="#0f2b4e"/><circle cx="252.5" cy="77.5" r="2.6" fill="#fff"/>
+        <circle cx="282" cy="80" r="8" fill="#0f2b4e"/><circle cx="284.5" cy="77.5" r="2.6" fill="#fff"/>
+        <rect x="254" y="100" width="24" height="6" rx="3" fill="#9ecbff"/>
+        <text x="266" y="142" font-size="11.5" font-weight="700" fill="#fff" text-anchor="middle">それらしい</text>
+        <text x="266" y="158" font-size="11.5" font-weight="700" fill="#fff" text-anchor="middle">続きを選ぶ</text>
+        <text x="266" y="180" font-size="10.5" fill="#ffd0a0" text-anchor="middle">＝事実を調べてはいない</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- SLIDE 1 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> 掴み ＋ 原理</div>
+  <div class="slide-body">
+
+    <div class="msg">AIには<br>「原理的に知り得ないこと」がある</div>
+
+    <h2>掴み ──「明日の天気は？」と聞いてみる</h2>
+    <div class="thennow">
+      <div class="tn old">
+        <span class="lbl">昔のAI</span>
+        <div class="q">Q. 明日の東京の天気は？</div>
+        <div class="ans">☁ 「明日は曇りのち晴れでしょう」<br><span style="font-weight:500;font-size:.88rem">── それらしい嘘</span></div>
+      </div>
+      <div class="tn new">
+        <span class="lbl">今のAI</span>
+        <div class="q">Q. 明日の東京の天気は？</div>
+        <div class="ans">🔎 検索して「明日は雨、降水確率70%」<br><span style="font-weight:500;font-size:.88rem">── ちゃんと正しく答える</span></div>
+      </div>
+    </div>
+    <blockquote><strong>何が変わったのか？</strong> ← この答えが、ハルシネーションの正体そのものです。</blockquote>
+
+    <h2>まず、AIがやっている計算はこれだけ</h2>
+    <figure>
+      <svg viewBox="0 0 720 300" role="img" aria-label="入力から次に来る言葉の確率を計算し、選んで末尾に足す、を繰り返す図">
+        <defs>
+          <marker id="a5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#1a5fb4"/></marker>
+        </defs>
+        <!-- 入力 -->
+        <rect x="200" y="14" width="320" height="38" rx="9" fill="#0f2b4e"/>
+        <text x="360" y="39" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">入力：「明日の東京の天気は」</text>
+        <path d="M360 54 V78" stroke="#1a5fb4" stroke-width="3" marker-end="url(#a5)"/>
+        <text x="376" y="72" font-size="12.5" fill="#5b6c82">次に来る言葉の確率を計算</text>
+
+        <!-- 確率テーブル -->
+        <rect x="224" y="86" width="272" height="128" rx="10" fill="#fff" stroke="#1a5fb4" stroke-width="2"/>
+        <rect x="234" y="98" width="140" height="22" rx="5" fill="#06d6a0"/>
+        <text x="386" y="115" font-size="13" font-weight="700" fill="#04452f">晴れ　32%</text>
+        <text x="510" y="115" font-size="12.5" font-weight="700" fill="#b45309">◄ ここから選ぶ</text>
+        <rect x="234" y="126" width="79" height="22" rx="5" fill="#9ecbff"/>
+        <text x="386" y="143" font-size="13" fill="#1e40af">雨　　18%</text>
+        <rect x="234" y="154" width="66" height="22" rx="5" fill="#c3d4ee"/>
+        <text x="386" y="171" font-size="13" fill="#5b6c82">曇り　15%</text>
+        <text x="234" y="198" font-size="13" fill="#8494a8">…</text>
+
+        <path d="M360 216 V240" stroke="#1a5fb4" stroke-width="3" marker-end="url(#a5)"/>
+        <rect x="120" y="246" width="480" height="38" rx="9" fill="#e7fbf4" stroke="#a9e8d3" stroke-width="2"/>
+        <text x="360" y="271" font-size="13" font-weight="700" fill="#04452f" text-anchor="middle">選んだ言葉を末尾に足して、また同じ計算 … を繰り返すだけ</text>
+        <!-- ループ矢印 -->
+        <path d="M120 265 H70 V150 Q70 100 200 100" fill="none" stroke="#06d6a0" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#a5)"/>
+      </svg>
+      <figcaption>空を見てもいないし、気象庁も見ていない。<strong>「それらしい続き」を選んでいるだけ</strong></figcaption>
+    </figure>
+
+    <h2>そして、知識には"断面"がある（知識カットオフ）</h2>
+    <figure>
+      <svg viewBox="0 0 720 170" role="img" aria-label="学習データには締切日があり、それ以降は何も知らないことを示す時間軸">
+        <!-- 学習済み帯 -->
+        <rect x="20" y="46" width="470" height="42" rx="8" fill="#dbeafe" stroke="#9dbfe8"/>
+        <text x="255" y="72" font-size="13.5" font-weight="700" fill="#1e40af" text-anchor="middle">学習データ（知っている）</text>
+        <!-- 締切線 -->
+        <line x1="494" y1="30" x2="494" y2="112" stroke="#e5484d" stroke-width="4"/>
+        <text x="494" y="24" font-size="12.5" font-weight="700" fill="#b4232a" text-anchor="middle">学習の締切日</text>
+        <!-- 未知帯 -->
+        <rect x="500" y="46" width="200" height="42" rx="8" fill="#fee9ea" stroke="#f6c9cb" stroke-dasharray="6 5"/>
+        <text x="600" y="72" font-size="13.5" font-weight="700" fill="#b4232a" text-anchor="middle">？？？　1バイトも知らない</text>
+        <!-- 目盛 -->
+        <g font-size="12" fill="#6b7c93">
+          <text x="40" y="108">2020</text><text x="200" y="108">2023</text><text x="380" y="108">2025</text>
+        </g>
+        <!-- 今日 -->
+        <line x1="620" y1="88" x2="620" y2="126" stroke="#0f2b4e" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="620" y="142" font-size="12.5" font-weight="700" fill="#0f2b4e" text-anchor="middle">今日</text>
+      </svg>
+    </figure>
+
+    <h2>素のAIが知り得ない領域は2つ</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:36%">領域</th><th>例</th></tr></thead>
+        <tbody>
+          <tr><td>⏱ <strong>学習の締切より後の出来事</strong></td><td>明日の天気、先週リリースされたライブラリの新API</td></tr>
+          <tr><td>🏢 <strong>そもそも学習データに無いもの</strong></td><td>自社の設計書、業務ルール、社内の命名規約</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>AIは、次に来る言葉の確率を計算して、それを1語ずつ並べているだけです。事実を調べているわけではありません</li>
+          <li>しかも学習データには<strong>締切日</strong>があります。それより後のことは、原理的に1バイトも入っていない</li>
+          <li>明日の天気は、この2つ目に完全に該当します。<strong>知っているはずがない</strong>んです。……なのに、今のAIはちゃんと答えますよね？</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> 何が進化したのか ＋ 対策</div>
+  <div class="slide-body">
+
+    <div class="msg">進化したのは<br>「知らないと判断して、取りに行く」こと</div>
+
+    <h2>今のAIが「明日の天気」に答えられる理由</h2>
+    <div class="steps g">
+      <div class="step"><strong>「これは自分の知識の外だ」と判断する</strong></div>
+      <div class="step"><strong>Web検索という道具を使う</strong><span class="xref">→ 小話03 のエージェントループと同じ</span></div>
+      <div class="step"><strong>取ってきた情報をコンテキストに載せる</strong></div>
+      <div class="step"><strong>その情報を根拠に答える</strong></div>
+    </div>
+
+    <blockquote>
+      <strong>記憶から答えているのではなく、その場で取ってきている</strong>。<br>
+      今日の研修も同じ構造です。AIは <code>Docsシステム/外部設計</code> を<strong>読みに行っている</strong>（＝社内固有情報を取りに行く行為）。
+    </blockquote>
+
+    <h2>では、取りに行けなかったら？</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:56%">状況</th><th>AIの振る舞い</th></tr></thead>
+        <tbody>
+          <tr class="ok"><td>✅ 取りに行けた</td><td><strong>正しく答える</strong>（＝天気はこのケース）</td></tr>
+          <tr class="ng"><td>❌ 検索できない／情報源が存在しない</td><td rowspan="3" style="vertical-align:middle;background:#fee9ea"><strong style="color:#b4232a">➡ それらしく埋める<br>＝ ハルシネーション</strong></td></tr>
+          <tr class="ng"><td>❌ そもそも「調べるべき」と気づかない</td></tr>
+          <tr class="ng"><td>❌ 渡されていない（設計書を読ませていない）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert">
+      <div class="h">🚨 だから、ここを疑う</div>
+      <ul>
+        <li>社内固有のルール・命名（Web上に存在しない ＝ 検索しても出てこない）</li>
+        <li>新しい／マイナーなライブラリのAPI仕様（締切より後 or 情報が薄い）</li>
+        <li>具体的な数値・固有名詞・バージョン番号</li>
+        <li>長い会話の後半（渡したはずの情報が押し出されている<span class="xref">→ 小話02</span>）</li>
+      </ul>
+    </div>
+
+    <h2>🛡 嘘を潰す3層</h2>
+    <div class="layers">
+      <div class="ly ly1">
+        <div class="n">LAYER 1</div><div class="t">与える</div>
+        <div class="d">設計書・ルールをコンテキストに載せる（推測させない）</div>
+      </div>
+      <div class="ly ly2">
+        <div class="n">LAYER 2</div><div class="t">機械で検証</div>
+        <div class="d">コンパイル／テスト。存在しないメソッドはここで落ちる</div>
+      </div>
+      <div class="ly ly3">
+        <div class="n">LAYER 3</div><div class="t">人が判断</div>
+        <div class="d">仕様と合っているか。機械に分からない所だけに集中</div>
+      </div>
+    </div>
+
+    <div class="hilite">
+      ⚠ 一番危ないのは「動いてしまう嘘」
+      <small>ビルドもテストも通るが仕様と違う ── これだけは人間しか気づけない（→ 小話15）</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">✅</span><strong>「AIは何でも知っている」でも「AIは嘘つき」でもない</strong>。知らないと気づいて取りに行けたか、だけの違い</li>
+        <li><span class="ic">✅</span>自社の設計書はWebを探しても出てこない。<strong>渡さなければ、AIは埋めるしかない</strong><span class="xref">→ 小話10</span></li>
+        <li><span class="ic">⚠</span>一番危ないのは <strong>「動いてしまう嘘」</strong>。ビルドもテストも通るが仕様と違う<span class="xref">→ 小話15</span></li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>天気に答えられるようになったのは、AIが賢くなって天気を覚えたからではありません。<strong>「これは自分では分からない」と判断して、検索する能力がついたから</strong>です</li>
+          <li>ここが数年でいちばん変わったところです。昔は「知らないことも、それらしく答える」しかなかった</li>
+          <li>ただし、これで解決したのは<strong>「Webで手に入る情報」だけ</strong>です。皆さんの会社の設計書は、どれだけ検索しても出てきません</li>
+          <li>だから今日のように<strong>こちらから渡す</strong>。渡さなければ、AIは天気を知らなかった頃と同じで、それらしく埋めるしかないんです</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<footer>AI小話 No.05 ／ ハルシネーション ｜ 🔧 仕組み ｜ 6分</footer>
+
+</div>
+</body>
+</html>

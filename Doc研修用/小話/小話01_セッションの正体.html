@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小話01 ｜ なぜAIはステートレスなのに会話が続くのか</title>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --ink:#16233a; --ink2:#3d4d66; --muted:#6b7c93;
+  --bg:#eaeff6; --card:#ffffff; --line:#dfe6ef;
+  --navy:#0f2b4e; --blue:#1a5fb4; --blue-l:#3584e4;
+  --blue50:#eff6ff; --blue100:#dbeafe; --blue700:#1e40af;
+  --accent:#06d6a0; --accent-d:#059669; --accent50:#e7fbf4;
+  --amber:#f59e0b; --amber50:#fff8e6; --amber700:#92400e;
+  --red:#e5484d; --red50:#fee9ea;
+  --r:14px;
+  --theme:var(--blue);          /* 分類テーマ色：🔧仕組み＝青 */
+  --theme-d:var(--navy);
+  --theme50:var(--blue50);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif;
+  font-size:16px; line-height:1.85; color:var(--ink);
+  background:var(--bg);
+  background-image:radial-gradient(circle at 12% -10%, #dce7f7 0%, transparent 45%),
+                   radial-gradient(circle at 100% 0%, #e3f6ef 0%, transparent 40%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:980px;margin:36px auto 80px;padding:0 16px}
+
+/* ============ HERO ============ */
+.hero{
+  background:linear-gradient(135deg,#0b2340 0%,#134c8f 55%,#2a7bd6 100%);
+  color:#fff;border-radius:20px;padding:40px 40px 34px;position:relative;overflow:hidden;
+  box-shadow:0 18px 44px rgba(11,35,64,.28);
+}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:linear-gradient(90deg,var(--accent),#4cc9f0,var(--accent))}
+.hero-grid{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero-txt{flex:1 1 400px;min-width:280px}
+.hero-art{flex:0 1 340px;min-width:260px}
+.kicker{font-size:12px;letter-spacing:.22em;color:#9ecbff;font-weight:600;margin-bottom:8px}
+.hero h1{font-size:1.95rem;line-height:1.45;font-weight:700;letter-spacing:-.01em}
+.hero .sub{margin-top:10px;font-size:1rem;color:#c9e2ff}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
+  padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.28);color:#eaf4ff;backdrop-filter:blur(2px)}
+.badge.hl{background:var(--accent);border-color:transparent;color:#04301f}
+
+/* ============ SLIDE CARD ============ */
+.slide{background:var(--card);border-radius:var(--r);margin-top:28px;
+  box-shadow:0 6px 26px rgba(15,43,78,.10);overflow:hidden;border:1px solid var(--line)}
+.slide-tag{display:flex;align-items:center;gap:10px;padding:12px 26px;
+  background:linear-gradient(90deg,var(--theme-d),var(--theme));color:#fff;
+  font-size:12px;letter-spacing:.2em;font-weight:700}
+.slide-tag .num{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;letter-spacing:0}
+.slide-body{padding:30px 34px 34px}
+
+/* メインメッセージ */
+.msg{
+  position:relative;margin:4px 0 26px;padding:22px 26px 22px 62px;border-radius:12px;
+  background:linear-gradient(135deg,var(--theme50),#fff);
+  border:1.5px solid var(--blue100);
+  font-size:1.22rem;font-weight:700;line-height:1.6;color:var(--navy);
+}
+.msg::before{content:'“';position:absolute;left:20px;top:2px;font-size:3.4rem;
+  color:var(--theme);opacity:.35;font-family:Georgia,serif}
+
+h2{font-size:1.16rem;font-weight:700;color:var(--navy);margin:34px 0 14px;
+  padding-left:13px;border-left:5px solid var(--theme);line-height:1.5}
+h2:first-of-type{margin-top:8px}
+h3{font-size:1rem;font-weight:700;color:#1e4a8a;margin:26px 0 12px}
+p{margin-bottom:14px;color:var(--ink2)}
+
+/* ============ 図 ============ */
+figure{margin:20px 0 24px;background:#f7fafd;border:1px solid var(--line);
+  border-radius:12px;padding:22px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center}
+
+/* チャットUI */
+.chat{display:flex;flex-direction:column;gap:10px}
+.bubble{max-width:76%;padding:10px 16px;border-radius:14px;font-size:.93rem;line-height:1.65;
+  box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.bubble .who{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;opacity:.7;margin-bottom:2px}
+.bubble.u{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:4px}
+.bubble.u .who{color:#cfe4ff}
+.bubble.a{align-self:flex-start;background:#fff;border:1px solid var(--line);
+  color:var(--ink);border-bottom-left-radius:4px;font-family:'Consolas','SFMono-Regular',monospace;font-size:.86rem}
+.bubble.a .who{font-family:inherit;color:var(--muted)}
+.bubble.pending{align-self:flex-end;background:#fff;border:2px dashed var(--accent-d);color:var(--accent-d);font-weight:700}
+
+/* ターン送信内容 */
+.turns{display:flex;flex-direction:column;gap:14px}
+.turn{background:#fff;border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.turn-h{background:#eef3f9;padding:8px 16px;font-size:12.5px;font-weight:700;color:var(--navy);
+  border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.turn-h .cnt{font-weight:600;color:var(--muted);font-size:11.5px}
+.turn-b{padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.line{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;font-size:.86rem;
+  font-family:'Consolas','SFMono-Regular',monospace}
+.line.re{background:#f2f5f9;color:#7d8ca1;border:1px dashed #d3dce7}
+.line.nw{background:var(--accent50);color:#04452f;border:1.5px solid var(--accent);font-weight:600}
+.role{flex:0 0 46px;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+  padding:2px 0;text-align:center;border-radius:5px}
+.line.re .role{background:#dde5ee;color:#66788e}
+.line.nw .role{background:var(--accent);color:#04301f}
+.line .tail{margin-left:auto;font-size:10.5px;font-family:inherit;white-space:nowrap}
+.turn-f{padding:9px 16px;background:#fbfdff;border-top:1px dashed var(--line);
+  font-size:12.5px;color:var(--blue700);font-weight:600}
+
+/* 引用 / 強調 */
+blockquote{margin:20px 0;padding:16px 22px;background:var(--blue50);
+  border-left:5px solid var(--theme);border-radius:0 10px 10px 0;color:#1e4a8a;font-size:.95rem}
+blockquote strong{color:var(--navy)}
+.hilite{margin:22px 0;padding:20px 24px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,#04301f,#065f46);color:#d7fff1;
+  font-size:1.08rem;font-weight:700;line-height:1.7;box-shadow:0 6px 18px rgba(6,95,70,.28)}
+.hilite small{display:block;font-size:.78rem;font-weight:500;color:#8fe3c8;margin-top:6px}
+
+/* 箇条書き */
+ul.dots{list-style:none;margin:14px 0 18px}
+ul.dots li{position:relative;padding-left:22px;margin-bottom:9px;color:var(--ink2)}
+ul.dots li::before{content:'';position:absolute;left:4px;top:.72em;width:8px;height:8px;
+  border-radius:50%;background:var(--theme)}
+ul.dots li strong{color:var(--navy)}
+
+/* テーブル */
+.tw{overflow-x:auto;margin:18px 0 22px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+thead tr{background:var(--navy);color:#fff}
+th{padding:11px 15px;text-align:left;font-weight:600;white-space:nowrap}
+td{padding:11px 15px;border-bottom:1px solid #e8edf3;color:var(--ink2);vertical-align:top}
+tbody tr:nth-child(even){background:#f6f9fd}
+tbody tr:last-child td{border-bottom:none}
+td strong{color:var(--navy)}
+.tag-ng{color:#b4232a;font-weight:700}
+.tag-ok{color:var(--accent-d);font-weight:700}
+
+/* Take away */
+.take{margin-top:30px;border-radius:12px;padding:24px 26px;
+  background:linear-gradient(135deg,#0b2340,#16406f);color:#e8f2ff;
+  box-shadow:0 8px 24px rgba(11,35,64,.25)}
+.take h3{color:#fff;margin:0 0 14px;font-size:1.05rem;display:flex;align-items:center;gap:9px}
+.take ul{list-style:none}
+.take li{position:relative;padding-left:30px;margin-bottom:11px;font-size:.96rem;line-height:1.7;color:#dceaff}
+.take li .ic{position:absolute;left:0;top:0}
+.take li strong{color:#8ff0d0}
+
+/* 話すこと */
+details.notes{margin-top:26px;border:1px solid var(--line);border-radius:11px;
+  background:#fcfdfe;overflow:hidden}
+details.notes summary{cursor:pointer;padding:13px 20px;font-weight:700;font-size:.93rem;
+  color:var(--navy);background:#f2f6fb;list-style:none;display:flex;align-items:center;gap:9px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::after{content:'▼';margin-left:auto;font-size:11px;color:var(--muted);transition:.2s}
+details.notes[open] summary::after{transform:rotate(180deg)}
+details.notes .inner{padding:16px 22px 20px}
+details.notes ul{list-style:none}
+details.notes li{position:relative;padding-left:20px;margin-bottom:11px;font-size:.93rem;color:var(--ink2)}
+details.notes li::before{content:'▸';position:absolute;left:2px;color:var(--theme);font-weight:700}
+
+/* Q&A */
+.qa{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  margin-top:28px;padding:26px 32px 30px;box-shadow:0 4px 18px rgba(15,43,78,.07)}
+.qa h2{margin-top:0}
+.qa-item{border-left:3px solid var(--blue100);padding:2px 0 2px 16px;margin-bottom:18px}
+.qa-item .q{font-weight:700;color:var(--navy);font-size:.96rem}
+.qa-item .a{font-size:.93rem;color:var(--ink2);margin-top:4px}
+.qa-item .a::before{content:'→ ';color:var(--accent-d);font-weight:700}
+
+/* リンク先小話 */
+.xref{display:inline-block;font-size:11.5px;font-weight:700;color:var(--blue700);
+  background:var(--blue100);border-radius:5px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;padding-bottom:10px}
+
+@media (max-width:640px){
+  .hero{padding:28px 22px 24px} .hero h1{font-size:1.45rem}
+  .slide-body{padding:22px 18px 26px} .msg{font-size:1.05rem;padding:18px 18px 18px 52px}
+  .bubble{max-width:92%}
+}
+@media print{
+  body{background:#fff} .wrap{margin:0;max-width:none}
+  .slide,.hero,.qa{box-shadow:none;break-inside:avoid}
+  details.notes{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-txt">
+      <div class="kicker">AI 小話 No.01 ／ セッションの正体</div>
+      <h1>なぜAIはステートレスなのに<br>会話が続くのか</h1>
+      <p class="sub">「さっきの続きで」が通じるのは、AIが覚えているからではありません。</p>
+      <div class="badges">
+        <span class="badge">🔧 仕組み</span>
+        <span class="badge">⏱ 5分（スライド2枚）</span>
+        <span class="badge">📍 CD実行待ち（最初の待ち時間）</span>
+        <span class="badge hl">優先度 ★★★</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 380 210" role="img" aria-label="人がAIに毎回会話ログの束を渡しているイラスト">
+        <defs>
+          <linearGradient id="h1p" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d8e8ff"/>
+          </linearGradient>
+          <linearGradient id="h1b" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#7fe8c8"/><stop offset="1" stop-color="#06d6a0"/>
+          </linearGradient>
+        </defs>
+        <!-- 人 -->
+        <circle cx="46" cy="72" r="17" fill="#ffd7b0"/>
+        <path d="M46 55c-10 0-14 6-14 11h28c0-5-4-11-14-11z" fill="#3b2f2a"/>
+        <path d="M22 148c0-16 11-27 24-27s24 11 24 27z" fill="url(#h1b)"/>
+        <!-- 紙束（3枚オフセット） -->
+        <g>
+          <rect x="132" y="56" width="62" height="80" rx="7" fill="#c9dcf5" opacity=".55"/>
+          <rect x="142" y="48" width="62" height="80" rx="7" fill="#e2edfb" opacity=".8"/>
+          <rect x="152" y="40" width="62" height="80" rx="7" fill="url(#h1p)" stroke="#9dbfe8"/>
+          <g fill="#8fb3dd">
+            <rect x="162" y="54" width="42" height="5" rx="2.5"/>
+            <rect x="162" y="66" width="34" height="5" rx="2.5"/>
+            <rect x="162" y="78" width="42" height="5" rx="2.5"/>
+            <rect x="162" y="90" width="28" height="5" rx="2.5"/>
+            <rect x="162" y="102" width="38" height="5" rx="2.5"/>
+          </g>
+          <text x="183" y="150" font-size="12" font-weight="700" fill="#c9e2ff" text-anchor="middle">会話ログ全文</text>
+          <text x="183" y="166" font-size="11" fill="#8ff0d0" text-anchor="middle">毎ターン再送</text>
+        </g>
+        <!-- 矢印 -->
+        <path d="M92 88 H126" stroke="#06d6a0" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M120 81 L130 88 L120 95 Z" fill="#06d6a0"/>
+        <path d="M224 88 H262" stroke="#06d6a0" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M256 81 L266 88 L256 95 Z" fill="#06d6a0"/>
+        <!-- ロボット -->
+        <line x1="316" y1="44" x2="316" y2="28" stroke="#9ecbff" stroke-width="3"/>
+        <circle cx="316" cy="24" r="6" fill="#06d6a0"/>
+        <rect x="272" y="44" width="88" height="76" rx="18" fill="#f2f7ff" stroke="#9ecbff" stroke-width="2"/>
+        <circle cx="296" cy="76" r="9" fill="#0f2b4e"/><circle cx="299" cy="73" r="3" fill="#fff"/>
+        <circle cx="336" cy="76" r="9" fill="#0f2b4e"/><circle cx="339" cy="73" r="3" fill="#fff"/>
+        <rect x="300" y="98" width="32" height="7" rx="3.5" fill="#9ecbff"/>
+        <rect x="286" y="126" width="60" height="10" rx="5" fill="#1a5fb4" opacity=".5"/>
+        <text x="316" y="160" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">記憶：0</text>
+        <text x="316" y="176" font-size="11" fill="#c9e2ff" text-anchor="middle">毎回が初対面</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- ================= SLIDE 1 ================= -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 1</span> 掴み ＋ 仕組み</div>
+  <div class="slide-body">
+
+    <div class="msg">AIは「覚えて」いない。<br>毎回、会話の全部を読み直している</div>
+
+    <h2>掴み ── 「さっきの続きで」が通じる ＝ 覚えている、のか？</h2>
+
+    <h3>① 画面で見えている会話（3ターン）</h3>
+    <figure>
+      <div class="chat">
+        <div class="bubble u"><span class="who">あなた</span>消費税を計算する関数を作って</div>
+        <div class="bubble a"><span class="who">AI</span>function calcTax(p){ return p*1.1 }</div>
+        <div class="bubble u"><span class="who">あなた</span>軽減税率にも対応して</div>
+        <div class="bubble a"><span class="who">AI</span>function calcTax(p, rate){ ... }</div>
+        <div class="bubble pending">テストも書いて</div>
+      </div>
+      <figcaption>人間の目には「文脈を理解して会話が続いている」ように見える</figcaption>
+    </figure>
+
+    <h3>② そのとき実際にAIへ送信されている中身</h3>
+    <figure>
+      <div class="turns">
+
+        <div class="turn">
+          <div class="turn-h"><span>1ターン目の送信内容</span><span class="cnt">1件</span></div>
+          <div class="turn-b">
+            <div class="line nw"><span class="role">user</span>消費税を計算する関数を作って<span class="tail">今回の入力</span></div>
+          </div>
+          <div class="turn-f">＝ AIが持っている情報は、この1行だけ</div>
+        </div>
+
+        <div class="turn">
+          <div class="turn-h"><span>2ターン目の送信内容</span><span class="cnt">3件</span></div>
+          <div class="turn-b">
+            <div class="line re"><span class="role">user</span>消費税を計算する関数を作って<span class="tail">← 再送</span></div>
+            <div class="line re"><span class="role">ai</span>function calcTax(p){ return p*1.1 }<span class="tail">← 再送</span></div>
+            <div class="line nw"><span class="role">user</span>軽減税率にも対応して<span class="tail">今回の入力</span></div>
+          </div>
+          <div class="turn-f">＝ この3行を「初めて読む文章」として、まとめて渡している</div>
+        </div>
+
+        <div class="turn">
+          <div class="turn-h"><span>3ターン目の送信内容</span><span class="cnt">5件</span></div>
+          <div class="turn-b">
+            <div class="line re"><span class="role">user</span>消費税を計算する関数を作って<span class="tail">← 再送</span></div>
+            <div class="line re"><span class="role">ai</span>function calcTax(p){ return p*1.1 }<span class="tail">← 再送</span></div>
+            <div class="line re"><span class="role">user</span>軽減税率にも対応して<span class="tail">← 再送</span></div>
+            <div class="line re"><span class="role">ai</span>function calcTax(p, rate){ ... }<span class="tail">← 再送</span></div>
+            <div class="line nw"><span class="role">user</span>テストも書いて<span class="tail">今回の入力</span></div>
+          </div>
+          <div class="turn-f">＝ 毎ターン、過去の全文がまるごと付いてくる</div>
+        </div>
+
+      </div>
+      <figcaption>灰色＝再送されている過去ログ／緑＝今回の入力。ターンが進むほど、送る量そのものが増えていく</figcaption>
+    </figure>
+
+    <blockquote>
+      もし「軽減税率にも対応して」の<strong>一文だけ</strong>を送ったら、AIは「何に対応するの？」としか答えられません。<br>
+      そうならないのは、AIが覚えているからではなく、<strong>上の全文が毎回くっついて届いているから</strong>です。
+    </blockquote>
+
+    <ul class="dots">
+      <li>AIの本体（モデル）は<strong>前のやり取りを1文字も保持していない</strong></li>
+      <li>「記憶しているように見える」のは、<strong>アプリ側が過去ログを溜めて、毎回くっつけて送っている</strong>から</li>
+      <li>つまり "セッション" の正体は、<strong>会話ログを積んでいる入れ物</strong>でしかない</li>
+    </ul>
+
+    <h2>この構造から、そのまま導けること</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:34%">見た目</th><th>実際に起きていること</th></tr></thead>
+        <tbody>
+          <tr><td><strong>会話が続く</strong></td><td>過去ログを毎回まるごと再送している</td></tr>
+          <tr><td><strong>話が長くなるほど遅い・重い</strong></td><td>読み直す量が毎ターン増えている</td></tr>
+          <tr><td><strong>新しいチャットだと通じない</strong></td><td>入れ物が空 ＝ 本当に何も知らない</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>AI＝人間のように記憶している、というイメージを一度捨ててください。モデルは<strong>呼ばれるたびに完全な初対面</strong>です</li>
+          <li>では、なぜ「軽減税率にも対応して」の一言で通じるのか。単純に、<strong>過去の会話を全部くっつけて毎回送り直しているから</strong>です。3ターン目には、1ターン目の質問も回答も、そっくりそのまま再送されています</li>
+          <li>今日使っているツールも同じです。ログを読んだ内容も、ビルドのエラーも、全部この"入れ物"に積み上がっています<span class="xref">→ 小話03 のループで足しているのがココ</span></li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- ================= SLIDE 2 ================= -->
+<section class="slide">
+  <div class="slide-tag"><span class="num">SLIDE 2</span> 実務への持ち帰り</div>
+  <div class="slide-body">
+
+    <div class="msg">「入れ物の中身」を管理できる人が、<br>AIをうまく使える</div>
+
+    <h2>入れ物に入っているもの（今日の研修の場合）</h2>
+    <figure>
+      <svg viewBox="0 0 720 300" role="img" aria-label="セッションという入れ物の内訳。システムプロンプト・ルールファイル・設計書・会話ログの4層で、会話ログだけが太っていく">
+        <defs>
+          <linearGradient id="g4" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#fde9c8"/><stop offset="1" stop-color="#f7c873"/>
+          </linearGradient>
+        </defs>
+        <!-- 外枠 -->
+        <rect x="20" y="18" width="680" height="212" rx="14" fill="#fbfdff" stroke="#1a5fb4" stroke-width="2.5"/>
+        <rect x="20" y="18" width="680" height="30" rx="14" fill="#1a5fb4"/>
+        <rect x="20" y="36" width="680" height="12" fill="#1a5fb4"/>
+        <text x="40" y="39" font-size="14" font-weight="700" fill="#fff">セッション（毎回まるごと送られる）</text>
+
+        <!-- ① -->
+        <rect x="40" y="62" width="640" height="34" rx="8" fill="#e8eefb" stroke="#c3d4ee"/>
+        <circle cx="60" cy="79" r="11" fill="#1a5fb4"/><text x="60" y="84" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+        <text x="82" y="84" font-size="13.5" font-weight="700" fill="#0f2b4e">システムプロンプト</text>
+        <text x="250" y="84" font-size="12.5" fill="#5b6c82">AIの役割・使える道具の説明</text>
+        <!-- ② -->
+        <rect x="40" y="102" width="640" height="34" rx="8" fill="#e6f4ef" stroke="#b7e0d0"/>
+        <circle cx="60" cy="119" r="11" fill="#059669"/><text x="60" y="124" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+        <text x="82" y="124" font-size="13.5" font-weight="700" fill="#04452f">ルールファイル</text>
+        <text x="250" y="124" font-size="12.5" fill="#5b6c82">CD_ルール.md など</text>
+        <!-- ③ -->
+        <rect x="40" y="142" width="640" height="34" rx="8" fill="#eef0fa" stroke="#ccd2ef"/>
+        <circle cx="60" cy="159" r="11" fill="#5b5bd6"/><text x="60" y="164" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+        <text x="82" y="164" font-size="13.5" font-weight="700" fill="#2c2c7a">読み込んだ設計書</text>
+        <text x="250" y="164" font-size="12.5" fill="#5b6c82">Docsシステム／外部設計 …</text>
+        <!-- ④ -->
+        <rect x="40" y="182" width="640" height="34" rx="8" fill="url(#g4)" stroke="#e0a83c" stroke-width="2"/>
+        <circle cx="60" cy="199" r="11" fill="#b45309"/><text x="60" y="204" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+        <text x="82" y="204" font-size="13.5" font-weight="700" fill="#7a3d05">これまでの全やり取り</text>
+        <text x="250" y="204" font-size="12.5" fill="#7a3d05">指示・生成コード・エラー・修正</text>
+        <!-- 膨張矢印 -->
+        <path d="M596 199 H668" stroke="#b45309" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 5"/>
+        <path d="M662 192 L674 199 L662 206 Z" fill="#b45309"/>
+
+        <path d="M64 232 V254" stroke="#b45309" stroke-width="2.5"/>
+        <path d="M57 238 L64 228 L71 238 Z" fill="#b45309"/>
+        <text x="82" y="260" font-size="13.5" font-weight="700" fill="#b45309">④だけが、放っておくとひたすら太る</text>
+        <text x="82" y="280" font-size="12.5" fill="#6b7c93">①〜③は基本ほぼ一定。膨らむのは「会話に溜めた分」だけ</text>
+      </svg>
+      <figcaption>入れ物の中身は4層。管理すべき対象は、実質④の1つだけ</figcaption>
+    </figure>
+
+    <h2>だから、こう扱う</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:22%">場面</th><th style="width:34%">やること</th><th>理由</th></tr></thead>
+        <tbody>
+          <tr><td>話題が変わった</td><td>🆕 <strong>新しいセッションを開く</strong></td><td>前の話題は邪魔なノイズにしかならない</td></tr>
+          <tr><td>おかしくなった</td><td>🆕 <strong>作り直す</strong>（直し続けない）</td><td>誤った出力もログに残り、後を汚染する<span class="xref">→ 小話11</span></td></tr>
+          <tr><td>覚えていてほしい事</td><td>📄 <strong>ファイルに書く</strong></td><td>会話に溜めるのではなく、設計書・ルールに置く</td></tr>
+          <tr><td>長くなってきた</td><td>✂ <strong>区切る</strong></td><td>読み直す量が増え続け、やがて上限に当たる<span class="xref">→ 小話02</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hilite">
+      💡 記憶は会話に溜めない。ファイルに置く。
+      <small>これが今日の spec駆動開発のやり方そのもの（→ 小話10）</small>
+    </div>
+
+    <div class="take">
+      <h3>🎁 Take away</h3>
+      <ul>
+        <li><span class="ic">✅</span><strong>AIに記憶はない</strong>。あるのは「毎回まとめて渡している会話ログ」だけ</li>
+        <li><span class="ic">✅</span>会話が長引くほど、<strong>毎ターンの読み直し量が増える</strong>（＝遅く・高く・不正確になる）</li>
+        <li><span class="ic">✅</span><strong>新しいセッションを開くことは、リセットではなく整理</strong>。ためらわずに切る</li>
+        <li><span class="ic">📄</span>残したい情報は会話ではなく<strong>ファイル</strong>へ。それが次のセッションでも効く唯一の方法</li>
+      </ul>
+    </div>
+
+    <details class="notes">
+      <summary>🎤 話すこと（登壇メモ）</summary>
+      <div class="inner">
+        <ul>
+          <li>ここが分かると、AIの挙動がかなり読めるようになります。「なぜ長い会話だと急に精度が落ちるのか」も、「なぜ新しいチャットだと話が通じないのか」も、全部この1つの構造で説明できます</li>
+          <li>よくある失敗が、<strong>1つのセッションを一日中使い続ける</strong>ことです。関係ない過去のやり取りを毎回読ませ続けることになります</li>
+          <li>逆に、うまい人は<strong>こまめに切ります</strong>。そして残したいことは設計書やルールファイルに書く。今日やっていることは、まさにその形です</li>
+        </ul>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<!-- ================= Q&A ================= -->
+<section class="qa">
+  <h2>補足（質問が出たら）</h2>
+  <div class="qa-item">
+    <div class="q">Q. じゃあ ChatGPT の「メモリ」機能は？</div>
+    <div class="a">あれもモデルが覚えているのではなく、別に保存しておいた文章を毎回入れ物に足しているだけ。構造は同じ。</div>
+  </div>
+  <div class="qa-item">
+    <div class="q">Q. 長い会話でも上限に当たらないのは？</div>
+    <div class="a">内部で古い部分を要約・圧縮している。詳しくは <strong>小話02</strong>。</div>
+  </div>
+</section>
+
+<footer>AI小話 No.01 ／ セッションの正体 ｜ 🔧 仕組み ｜ 5分</footer>
+
+</div>
+</body>
+</html>
